@@ -11,70 +11,116 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
+        /* --- СТИЛИ ВИДЕО-ЗАСТАВКИ --- */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff; /* ИЗМЕНЕНО НА БЕЛЫЙ */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+            transition: opacity 0.8s ease;
+            overflow: hidden;
+        }
+
+        #intro-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        body.loading {
+            overflow: hidden !important;
+        }
+
+        /* --- ОБНОВЛЕННЫЕ ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ --- */
         :root {
             --primary: #FF9900;
-            --bg: #0f0f0f;
-            --card: #1a1a1a;
-            --text: #ffffff;
-            --input: #222;
-            --glow: 0 0 20px rgba(255, 153, 0, 0.4);
+            --bg: #f4f7f6;      /* ОСНОВНОЙ ФОН БЕЛЫЙ */
+            --card: #ffffff;    /* КАРТОЧКИ БЕЛЫЕ */
+            --text: #1a1a1a;    /* ТЕКСТ ТЕМНЫЙ */
+            --input: #e4e6eb;   /* ПОЛЯ ВВОДА СВЕТЛЫЕ */
+            --glow: 0 5px 15px rgba(255, 153, 0, 0.2);
         }
+
+        /* Настройки для переключения (теперь это темная тема) */
         [data-theme="light"] {
-            --bg: #f4f7f6; --card: #ffffff; --text: #1a1a1a; --input: #e4e6eb;
+            --bg: #0f0f0f; 
+            --card: #1a1a1a; 
+            --text: #ffffff; 
+            --input: #222;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
         body { background-color: var(--bg); color: var(--text); transition: 0.3s; overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh; }
 
-        header { background: var(--primary); padding: 20px; text-align: center; color: white; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
-        #smart-search { width: 100%; max-width: 600px; padding: 12px 25px; border-radius: 30px; border: none; background: rgba(255,255,255,0.25); color: white; outline: none; margin-top: 15px; }
+        header { background: var(--primary); padding: 20px; text-align: center; color: white; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        #smart-search { width: 100%; max-width: 600px; padding: 12px 25px; border-radius: 30px; border: none; background: rgba(255,255,255,0.9); color: #333; outline: none; margin-top: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #smart-search::placeholder { color: #888; }
 
-        nav { background: var(--card); padding: 10px; position: sticky; top: 0; z-index: 900; border-bottom: 1px solid var(--primary); }
+        nav { background: var(--card); padding: 10px; position: sticky; top: 0; z-index: 900; border-bottom: 1px solid rgba(255,153,0,0.2); }
         .nav-container { display: flex; overflow-x: auto; gap: 10px; max-width: 1300px; margin: 0 auto; scrollbar-width: none; }
-        .nav-link { padding: 8px 18px; background: rgba(128,128,128,0.1); border-radius: 20px; cursor: pointer; font-size: 0.85rem; transition: 0.3s; white-space: nowrap; color: #888; font-weight: bold; }
+        .nav-link { padding: 8px 18px; background: rgba(128,128,128,0.1); border-radius: 20px; cursor: pointer; font-size: 0.85rem; transition: 0.3s; white-space: nowrap; color: #666; font-weight: bold; }
         .nav-link.active { background: var(--primary); color: white; }
         
-        .sub-nav { display: none; background: rgba(255,153,0,0.08); padding: 10px; justify-content: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--primary); }
-        .sub-link { padding: 6px 14px; background: rgba(128,128,128,0.1); border-radius: 15px; cursor: pointer; font-size: 0.75rem; color: #aaa; transition: 0.3s; white-space: nowrap; }
+        .sub-nav { display: none; background: rgba(255,153,0,0.05); padding: 10px; justify-content: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255,153,0,0.2); }
+        .sub-link { padding: 6px 14px; background: rgba(128,128,128,0.1); border-radius: 15px; cursor: pointer; font-size: 0.75rem; color: #777; transition: 0.3s; white-space: nowrap; }
         .sub-link.active { background: var(--primary); color: white; }
 
         .container { flex: 1; max-width: 1300px; margin: 20px auto; padding: 0 10px; }
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
         @media (max-width: 600px) { .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
 
-        .product-card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid rgba(128,128,128,0.1); transition: 0.3s; cursor: pointer; position: relative; display: flex; flex-direction: column; }
+        .product-card { background: var(--card); border-radius: 15px; overflow: hidden; border: 1px solid rgba(128,128,128,0.1); transition: 0.3s; cursor: pointer; position: relative; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .product-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: var(--glow); }
-        .p-img { width: 100%; aspect-ratio: 1/1; background-size: cover; background-position: center; background-color: #222; }
+        .p-img { width: 100%; aspect-ratio: 1/1; background-size: cover; background-position: center; background-color: #f9f9f9; }
         
         .promo-badge { position: absolute; top: 10px; left: 10px; background: #ff4444; color: white; padding: 4px 8px; border-radius: 5px; font-size: 0.7rem; font-weight: bold; z-index: 5; }
         .p-info { padding: 12px; flex-grow: 1; }
-        .p-info h3 { font-size: 0.85rem; height: 2.4em; overflow: hidden; margin-bottom: 8px; line-height: 1.2; }
+        .p-info h3 { font-size: 0.85rem; height: 2.4em; overflow: hidden; margin-bottom: 8px; line-height: 1.2; color: var(--text); }
         .price-new { color: var(--primary); font-weight: bold; font-size: 1.1rem; }
         .price-old { color: #888; text-decoration: line-through; font-size: 0.8rem; margin-left: 5px; }
 
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 5000; padding: 20px; }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto; text-align: center; border: 1px solid var(--primary); }
-        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #666; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 5000; padding: 20px; }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto; text-align: center; border: 1px solid rgba(255,153,0,0.3); color: var(--text); }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #999; transition: 0.3s; }
+        .close-btn:hover { color: var(--primary); transform: rotate(90deg); }
 
         .admin-controls { position: absolute; top: 5px; right: 5px; display: none; gap: 5px; z-index: 20; }
         .admin-btn-card { width: 30px; height: 30px; border-radius: 8px; border: none; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; }
         .add-p-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 2rem; cursor: pointer; box-shadow: var(--glow); z-index: 3000; border: none; }
 
-        .admin-input { width: 100%; padding: 12px; background: var(--input); border: 1px solid #444; color: var(--text); border-radius: 10px; margin-bottom: 12px; outline: none; text-align: left; }
+        .admin-input { width: 100%; padding: 12px; background: var(--input); border: 1px solid rgba(128,128,128,0.2); color: var(--text); border-radius: 10px; margin-bottom: 12px; outline: none; text-align: left; }
         
-        footer { background: var(--card); padding: 40px 20px; border-top: 2px solid var(--primary); margin-top: 50px; text-align: center; }
-        .social-item { text-decoration: none; color: white; padding: 10px 20px; border-radius: 10px; font-weight: bold; display: flex; align-items: center; gap: 8px; transition: 0.3s; background: rgba(128,128,128,0.1); }
+        .m-gallery { display: flex; overflow-x: auto; gap: 10px; margin-bottom: 15px; scrollbar-width: none; }
+        .m-gallery img { height: 200px; border-radius: 10px; object-fit: cover; }
+
+        footer { background: var(--card); padding: 40px 20px; border-top: 1px solid rgba(255,153,0,0.2); margin-top: 50px; text-align: center; }
+        .social-links { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+        .social-item { text-decoration: none; color: white !important; padding: 10px 20px; border-radius: 10px; font-weight: bold; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
 
         .btn-buy { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 1rem; }
-        .theme-toggle { position: fixed; bottom: 30px; left: 30px; width: 50px; height: 50px; background: var(--card); border: 2px solid var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2000; color: var(--primary); }
-        .cart-btn { position: fixed; top: 20px; right: 20px; background: white; color: black; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .theme-toggle { position: fixed; bottom: 30px; left: 30px; width: 50px; height: 50px; background: var(--card); border: 2px solid var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 2000; color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .cart-btn { position: fixed; top: 20px; right: 20px; background: var(--primary); color: white; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .admin-trigger { position: fixed; bottom: 30px; left: 100px; opacity: 0.4; background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer; z-index: 1000; }
         
-        #cart-sidebar { position: fixed; top: 0; right: -400px; width: 360px; height: 100%; background: var(--card); z-index: 4000; padding: 30px; transition: 0.4s; border-left: 2px solid var(--primary); display: flex; flex-direction: column; }
+        #cart-sidebar { position: fixed; top: 0; right: -400px; width: 360px; height: 100%; background: var(--card); z-index: 4000; padding: 30px; transition: 0.4s; border-left: 2px solid var(--primary); display: flex; flex-direction: column; box-shadow: -5px 0 20px rgba(0,0,0,0.1); }
         #cart-sidebar.active { right: 0; }
+        .cart-item-ui { display:flex; justify-content:space-between; margin-bottom:10px; background:rgba(128,128,128,0.05); padding:10px; border-radius:10px; align-items:center; border: 1px solid rgba(128,128,128,0.1); }
     </style>
 </head>
-<body>
+<body class="loading">
+
+<div id="splash-screen">
+    <video id="intro-video" autoplay muted playsinline preload="auto">
+        <source src="intro.mp4" type="video/mp4">
+    </video>
+</div>
 
 <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
 <button class="admin-trigger" onclick="handleAdmin()"><i class="fas fa-user-shield"></i></button>
@@ -84,19 +130,22 @@
 
 <header>
     <h1>GooDok.TJ</h1>
-    <input type="text" id="smart-search" placeholder="Поиск товаров..." oninput="render()">
+    <input type="text" id="smart-search" placeholder="Поиск по товарам и параметрам..." oninput="render()">
 </header>
 
 <nav><div class="nav-container" id="category-list"></div></nav>
 <div id="pc-sub-nav" class="sub-nav"></div>
 
-<div class="container"><div class="products-grid" id="main-grid"></div><p id="loader" style="text-align: center; margin-top: 50px;">Загрузка товаров из базы данных...</p></div>
+<div class="container">
+    <div class="products-grid" id="main-grid"></div>
+    <p id="loader" style="text-align: center; margin-top: 50px;">Загрузка товаров из базы...</p>
+</div>
 
 <footer>
     <div class="footer-info">
         <h3><i class="fas fa-map-marker-alt"></i> Наш адрес:</h3>
         <p>г. Душанбе, рынок "Корвон"</p>
-        <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+        <div class="social-links">
             <a href="https://wa.me/992555572988" class="social-item" style="background:#25D366;"><i class="fab fa-whatsapp"></i> WhatsApp</a>
             <a href="https://t.me/Goodok_tj" class="social-item" style="background:#0088cc;"><i class="fab fa-telegram"></i> Telegram</a>
             <div class="social-item" style="background:#444;"><i class="fas fa-phone"></i> +992 555 572 988</div>
@@ -107,10 +156,9 @@
 <div id="admin-overlay" class="overlay">
     <div class="modal-content" style="text-align: left;">
         <span class="close-btn" onclick="closeAdmin()">&times;</span>
-        <h2 style="color:var(--primary); margin-bottom:20px;">Добавить товар на сервер</h2>
+        <h2 style="color:var(--primary); margin-bottom:20px;">Управление товаром</h2>
         <input type="hidden" id="edit-id">
         <input type="text" id="p-name" class="admin-input" placeholder="Название товара">
-        
         <select id="p-cat" class="admin-input">
             <optgroup label="Основные категории">
                 <option value="Ноутбуки">Ноутбуки</option>
@@ -124,8 +172,9 @@
                 <option value="Аксессуары">Аксессуары</option>
                 <option value="Клавиатура и Мышка">Клавиатура и Мышка</option>
                 <option value="Моноблоки">Моноблоки</option>
+                <option value="Сборка ПК">Сборка ПК (Общее)</option>
             </optgroup>
-            <optgroup label="Сборка ПК">
+            <optgroup label="Комплектующие ПК">
                 <option value="Блок питания для ПК">Блок питания для ПК</option>
                 <option value="Видеокарты">Видеокарты</option>
                 <option value="Кулеры для ПК">Кулеры для ПК</option>
@@ -135,51 +184,94 @@
                 <option value="Оперативная память для ноутбук">Оперативная память для ноутбук</option>
             </optgroup>
         </select>
-
         <div style="display:flex; gap:10px;">
-            <input type="number" id="p-price" class="admin-input" placeholder="Цена">
-            <input type="number" id="p-old-price" class="admin-input" placeholder="Старая цена">
+            <input type="number" id="p-price" class="admin-input" placeholder="Цена (смн)">
+            <input type="number" id="p-old-price" class="admin-input" placeholder="Старая цена (для акции)">
         </div>
-        <textarea id="p-desc" class="admin-input" placeholder="Описание" rows="4"></textarea>
-        <input type="text" id="p-img" class="admin-input" placeholder="Ссылки на фото через запятую">
-        <button class="btn-buy" onclick="saveProduct()">Сохранить для всех клиентов</button>
+        <textarea id="p-desc" class="admin-input" placeholder="Характеристики (Процессор, ОЗУ и т.д.)" rows="4"></textarea>
+        <input type="text" id="p-img" class="admin-input" placeholder="Ссылки на фото через запятую (3-4 шт)">
+        <button class="btn-buy" onclick="saveProduct()">Опубликовать для всех</button>
     </div>
 </div>
 
 <div id="product-overlay" class="overlay" onclick="if(event.target==this) this.style.display='none'">
     <div class="modal-content" style="text-align: left;">
         <span class="close-btn" onclick="document.getElementById('product-overlay').style.display='none'">&times;</span>
-        <div id="m-gallery" style="display:flex; overflow-x:auto; gap:10px; margin-bottom:15px; scrollbar-width:none;"></div>
+        <div id="m-gallery" class="m-gallery"></div>
         <h2 id="m-title" style="color:var(--primary); margin-bottom:10px;"></h2>
-        <div style="margin-bottom:15px;"><span id="m-price" class="price-new"></span><span id="m-old-price" class="price-old"></span></div>
-        <p id="m-desc" style="white-space:pre-line; font-size:0.9rem; line-height:1.6; opacity:0.8; margin-bottom:20px; border-top:1px solid #333; padding-top:15px;"></p>
+        <div style="margin-bottom:15px;">
+            <span id="m-price" class="price-new" style="font-size: 1.4rem;"></span>
+            <span id="m-old-price" class="price-old"></span>
+        </div>
+        <p id="m-desc" style="white-space:pre-line; font-size:0.9rem; line-height:1.6; opacity:0.8; margin-bottom:20px; border-top:1px solid rgba(128,128,128,0.2); padding-top:15px;"></p>
         <button id="m-buy-btn" class="btn-buy">🛒 В корзину</button>
+    </div>
+</div>
+
+<div id="order-overlay" class="overlay">
+    <div class="modal-content" style="text-align: left;">
+        <span class="close-btn" onclick="document.getElementById('order-overlay').style.display='none'">&times;</span>
+        <h2 style="color:var(--primary); margin-bottom:20px;">Оформление заказа</h2>
+        <input type="text" id="o-name" class="admin-input" placeholder="Ваше имя">
+        <input type="text" id="o-phone" class="admin-input" placeholder="Телефон для связи">
+        <select id="o-del" class="admin-input" onchange="document.getElementById('o-addr').style.display = (this.value==='Доставка'?'block':'none')">
+            <option value="Самовывоз">Самовывоз (Бозори Корвон)</option>
+            <option value="Доставка">Доставка по городу</option>
+        </select>
+        <input type="text" id="o-addr" class="admin-input" placeholder="Укажите точный адрес" style="display:none;">
+        <button class="btn-buy" onclick="sendOrder()">Подтвердить заказ</button>
     </div>
 </div>
 
 <div id="success-overlay" class="overlay">
     <div class="modal-content">
         <div style="font-size:4rem; color:#4CAF50;"><i class="fas fa-check-circle"></i></div>
-        <h2 style="margin:15px 0;">Заказ отправлен!</h2>
-        <p id="success-text"></p>
-        <button class="btn-buy" onclick="location.reload()" style="background:#4CAF50; margin-top:20px;">Отлично</button>
+        <h2 style="margin:15px 0;">Заказ принят!</h2>
+        <p id="success-text" style="line-height: 1.6;"></p>
+        <button class="btn-buy" onclick="location.reload()" style="background:#4CAF50; margin-top:20px;">Закрыть</button>
     </div>
 </div>
 
-<div id="cart-sidebar"><span class="close-btn" onclick="toggleCart()">&times;</span><h2 style="color:var(--primary); margin-bottom:20px;">Корзина</h2><div id="cart-items" style="flex:1; overflow-y:auto;"></div><div style="border-top:1px solid #444; padding-top:20px;"><h3>Итого: <span id="cart-total">0</span> смн</h3><button class="btn-buy" onclick="openOrderForm()" style="margin-top:15px;">Оформить</button></div></div>
+<div id="cart-sidebar">
+    <span class="close-btn" onclick="toggleCart()">&times;</span>
+    <h2 style="color:var(--primary); margin-bottom:20px;">Корзина</h2>
+    <div id="cart-items" style="flex:1; overflow-y:auto;"></div>
+    <div style="border-top:1px solid rgba(128,128,128,0.2); padding-top:20px;">
+        <h3>Итого: <span id="cart-total">0</span> смн</h3>
+        <button class="btn-buy" onclick="openOrderForm()" style="margin-top:15px;">Заказать</button>
+    </div>
+</div>
 
 <script>
-    // --- ПЕРЕМЕННЫЕ ---
-    const botToken = '8759182995:AAFzDQBVj1msmBN6oshwtIqMiF4vxO9mFIY';
-    const chatId = '1949497960';
+    /* --- СКРИПТ УПРАВЛЕНИЯ ЗАСТАВКОЙ --- */
+    window.addEventListener('load', () => {
+        const video = document.getElementById('intro-video');
+        const splash = document.getElementById('splash-screen');
 
-    // --- FIREBASE КОНФИГУРАЦИЯ (ВСТАВЬТЕ СЮДА СВОЙ URL) ---
+        function hideSplash() {
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.style.display = 'none';
+                document.body.classList.remove('loading');
+                document.body.style.overflow = 'auto';
+            }, 800);
+        }
+        video.onended = hideSplash;
+        setTimeout(() => {
+            if (splash.style.display !== 'none') hideSplash();
+        }, 10000);
+    });
+
+    /* --- ЛОГИКА FIREBASE --- */
     const firebaseConfig = {
-        databaseURL: "https://goodoktj-default-rtdb.firebaseio.com/" 
+        databaseURL: "https://goodoktj-fdfaf-default-rtdb.firebaseio.com/" 
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
+    const botToken = '8759182995:AAFzDQBVj1msmBN6oshwtIqMiF4vxO9mFIY';
+    const chatId = '1949497960';
 
     let products = [];
     let categories = ["Ноутбуки", "Принтеры", "Телефон", "Монитор", "Наушник", "Wi-Fi Роутер", "Повербанк", "SSD и HDD", "Аксессуары", "Клавиатура и Мышка", "Моноблоки", "Сборка ПК"];
@@ -190,19 +282,15 @@
     let currentSub = "Все";
     let isAdmin = false;
 
-    // --- ЗАГРУЗКА ДАННЫХ В РЕАЛЬНОМ ВРЕМЕНИ ---
-    function loadFromDatabase() {
-        db.ref('products').on('value', (snapshot) => {
-            const data = snapshot.val();
-            products = data ? Object.values(data) : [];
-            document.getElementById('loader').style.display = 'none';
-            render();
-        });
-    }
+    db.ref('products').on('value', (snapshot) => {
+        const data = snapshot.val();
+        products = data ? Object.values(data) : [];
+        document.getElementById('loader').style.display = 'none';
+        render();
+    });
 
-    // --- ФУНКЦИИ АДМИНА ---
     function handleAdmin() {
-        if (!isAdmin && prompt("Пароль:") === "Behruz9999") {
+        if (!isAdmin && prompt("Пароль администратора:") === "Behruz9999") {
             isAdmin = true;
             document.getElementById('add-p-btn').style.display = 'flex';
             render();
@@ -216,9 +304,7 @@
         const name = document.getElementById('p-name').value;
         const price = document.getElementById('p-price').value;
         const imgStr = document.getElementById('p-img').value;
-
-        if(!name || !price || !imgStr) return alert("Заполните поля!");
-
+        if(!name || !price || !imgStr) return alert("Заполните название, цену и фото!");
         const pData = {
             id: id,
             name, price,
@@ -227,17 +313,7 @@
             desc: document.getElementById('p-desc').value,
             imgs: imgStr.split(',').map(s => s.trim())
         };
-
-        db.ref('products/' + id).set(pData).then(() => {
-            closeAdmin();
-        });
-    }
-
-    function deleteP(id, e) {
-        e.stopPropagation();
-        if(confirm("Удалить этот товар у всех клиентов?")) {
-            db.ref('products/' + id).remove();
-        }
+        db.ref('products/' + id).set(pData).then(() => closeAdmin());
     }
 
     function editP(id, e) {
@@ -253,11 +329,16 @@
         openAdminModal();
     }
 
-    // --- РЕНДЕР И ЛОГИКА (ОСТАВШЕЕСЯ) ---
+    function deleteP(id, e) {
+        e.stopPropagation();
+        if(confirm("Удалить этот товар навсегда?")) db.ref('products/' + id).remove();
+    }
+
+    function resetAdminForm() { document.getElementById('edit-id').value = ""; document.querySelectorAll('.admin-input').forEach(i => i.value=""); }
+
     function render() {
         const grid = document.getElementById('main-grid');
         const search = document.getElementById('smart-search').value.toLowerCase();
-        
         document.getElementById('category-list').innerHTML = `<div class="nav-link ${currentCat==='Все'?'active':''}" onclick="setCat('Все', this)">Все</div>` + 
             categories.map(c => `<div class="nav-link ${currentCat===c?'active':''}" onclick="setCat('${c}', this)">${c}</div>`).join('');
 
@@ -281,20 +362,79 @@
                 <div class="p-info">
                     <h3>${p.name}</h3>
                     <div class="price-box"><span class="price-new">${p.price} с.</span>${p.oldPrice ? `<span class="price-old">${p.oldPrice} с.</span>` : ''}</div>
+                    <button class="btn-buy" style="margin-top:10px; padding:8px; font-size:0.8rem;" onclick="event.stopPropagation(); buy(${p.id})">В корзину</button>
                 </div>
             </div>`).join('');
     }
 
-    function setCat(cat, el) { currentCat = cat; currentSub = "Все"; const pcSub = document.getElementById('pc-sub-nav'); if(cat === "Сборка ПК") { pcSub.style.display = 'flex'; pcSub.innerHTML = `<div class="sub-link active" onclick="setSub('Все', this)">Все детали</div>` + subCats.map(s => `<div class="sub-link" onclick="setSub('${s}', this)">${s}</div>`).join(''); } else { pcSub.style.display = 'none'; } render(); }
-    function setSub(sub, el) { currentSub = sub; document.querySelectorAll('.sub-link').forEach(l => l.classList.remove('active')); el.classList.add('active'); render(); }
-    function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('active'); }
+    function setCat(cat, el) {
+        currentCat = cat; currentSub = "Все";
+        const pcSub = document.getElementById('pc-sub-nav');
+        if(cat === "Сборка ПК") {
+            pcSub.style.display = 'flex';
+            pcSub.innerHTML = `<div class="sub-link active" onclick="setSub('Все', this)">Все запчасти</div>` + 
+                subCats.map(s => `<div class="sub-link" onclick="setSub('${s}', this)">${s}</div>`).join('');
+        } else { pcSub.style.display = 'none'; }
+        render();
+    }
+
+    function setSub(sub, el) {
+        currentSub = sub;
+        document.querySelectorAll('.sub-link').forEach(l => l.classList.remove('active'));
+        el.classList.add('active');
+        render();
+    }
+
+    function openP(id) {
+        const p = products.find(x => x.id == id);
+        document.getElementById('m-gallery').innerHTML = p.imgs.map(s => `<img src="${s}">`).join('');
+        document.getElementById('m-title').innerText = p.name;
+        document.getElementById('m-price').innerText = p.price + " смн";
+        document.getElementById('m-old-price').innerText = p.oldPrice ? p.oldPrice + " смн" : "";
+        document.getElementById('m-desc').innerText = p.desc || "Характеристики уточняйте у менеджера.";
+        document.getElementById('m-buy-btn').onclick = () => { buy(p.id); document.getElementById('product-overlay').style.display='none'; };
+        document.getElementById('product-overlay').style.display = 'flex';
+    }
+
     function buy(id) { cart.push(products.find(x => x.id == id)); updateCartUI(); }
-    function updateCartUI() { document.getElementById('cart-count').innerText = cart.length; let total = 0; document.getElementById('cart-items').innerHTML = cart.map((item, idx) => { total += Number(item.price); return `<div style="display:flex; justify-content:space-between; margin-bottom:10px; background:#222; padding:10px; border-radius:10px; align-items:center;"><span>${item.name}</span><b>${item.price}</b><i class="fas fa-times" style="color:red; cursor:pointer;" onclick="cart.splice(${idx},1); updateCartUI();"></i></div>`; }).join(''); document.getElementById('cart-total').innerText = total; }
-    function openP(id) { const p = products.find(x => x.id == id); document.getElementById('m-gallery').innerHTML = p.imgs.map(s => `<img src="${s}" style="height:200px; border-radius:10px;">`).join(''); document.getElementById('m-title').innerText = p.name; document.getElementById('m-price').innerText = p.price + " смн"; document.getElementById('m-old-price').innerText = p.oldPrice ? p.oldPrice + " смн" : ""; document.getElementById('m-desc').innerText = p.desc || "Нет описания"; document.getElementById('m-buy-btn').onclick = () => { buy(p.id); document.getElementById('product-overlay').style.display='none'; }; document.getElementById('product-overlay').style.display = 'flex'; }
-    function resetAdminForm() { document.getElementById('edit-id').value = ""; document.querySelectorAll('.admin-input').forEach(i => i.value=""); }
+    function toggleCart() { document.getElementById('cart-sidebar').classList.toggle('active'); }
+    function openOrderForm() { if(cart.length > 0) document.getElementById('order-overlay').style.display = 'flex'; }
+
+    async function sendOrder() {
+        const name = document.getElementById('o-name').value;
+        const phone = document.getElementById('o-phone').value;
+        const deliv = document.getElementById('o-del').value;
+        const addr = document.getElementById('o-addr').value;
+        if(!name || !phone) return alert("Введите имя и номер телефона!");
+        let orderList = cart.map((i, idx) => `${idx+1}. ${i.name} (${i.price} смн)`).join('\n');
+        let total = document.getElementById('cart-total').innerText;
+        let msg = `🛍 НОВЫЙ ЗАКАЗ!\n👤 Имя: ${name}\n📞 Тел: ${phone}\n🚚: ${deliv}${deliv==='Доставка'?'\n📍: '+addr:''}\n\n🛒 Товары:\n${orderList}\n💰 ИТОГО: ${total} смн`;
+        try {
+            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({chat_id: chatId, text: msg})
+            });
+            document.getElementById('order-overlay').style.display = 'none';
+            document.getElementById('success-text').innerHTML = `Ваш заказ успешно принят, спасибо <b>${name}</b>! <br>Мы свяжемся с вами в ближайшее время!`;
+            document.getElementById('success-overlay').style.display = 'flex';
+            cart = []; updateCartUI();
+        } catch(e) { alert("Ошибка при отправке заказа!"); }
+    }
+
+    function updateCartUI() {
+        document.getElementById('cart-count').innerText = cart.length;
+        let total = 0;
+        document.getElementById('cart-items').innerHTML = cart.map((item, idx) => {
+            total += Number(item.price);
+            return `<div class="cart-item-ui"><span>${item.name}</span><b>${item.price}</b><i class="fas fa-times" style="color:red; cursor:pointer;" onclick="cart.splice(${idx},1); updateCartUI();"></i></div>`;
+        }).join('');
+        document.getElementById('cart-total').innerText = total;
+    }
+
     function toggleTheme() { document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='light'?'dark':'light'); }
 
-    loadFromDatabase();
+    render();
 </script>
 </body>
 </html>

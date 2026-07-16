@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Склад</title>
+
+<!-- iOS: делает приложение "установленным" — открывается без адресной строки Safari -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Склад">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#e91e63">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%D0%A1%D0%BA%D0%BB%D0%B0%D0%B4%22%2C%22short_name%22%3A%22%D0%A1%D0%BA%D0%BB%D0%B0%D0%B4%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%230f0f13%22%2C%22theme_color%22%3A%22%23e91e63%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2527http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2527%2520viewBox%253D%25270%25200%2520192%2520192%2527%253E%253Crect%2520width%253D%2527192%2527%2520height%253D%2527192%2527%2520fill%253D%2527%2523E91E63%2527%252F%253E%253Cpath%2520d%253D%2527M96%252032%2520L162%252066%2520V78%2520L96%252044%2520L30%252078%2520V66%2520Z%2527%2520fill%253D%2527white%2527%252F%253E%253Crect%2520x%253D%252740%2527%2520y%253D%252778%2527%2520width%253D%2527112%2527%2520height%253D%252780%2527%2520fill%253D%2527white%2527%252F%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23E91E63'/%3E%3Cpath d='M50 15 L85 32 V38 L50 21 L15 38 V32 Z' fill='white'/%3E%3Crect x='20' y='38' width='60' height='42' fill='white' opacity='0.95'/%3E%3Crect x='27' y='45' width='18' height='16' fill='%23E91E63'/%3E%3Crect x='55' y='45' width='18' height='16' fill='%23E91E63'/%3E%3Crect x='41' y='65' width='18' height='15' fill='%23E91E63'/%3E%3C/svg%3E">
+
+<!-- значок для домашнего экрана iPhone (тот же дизайн, крупнее) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23E91E63'/%3E%3Cpath d='M90 30 L152 62 V72 L90 42 L28 72 V62 Z' fill='white'/%3E%3Crect x='38' y='72' width='104' height='74' fill='white' opacity='0.95'/%3E%3Crect x='50' y='84' width='32' height='28' fill='%23E91E63'/%3E%3Crect x='98' y='84' width='32' height='28' fill='%23E91E63'/%3E%3Crect x='74' y='116' width='32' height='26' fill='%23E91E63'/%3E%3C/svg%3E">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background:#0f0f13; color:#f2f2f5; min-height:100vh;
+  }
+
+  /* ===== LOGIN ===== */
+  #loginScreen {
+    position:fixed; inset:0; z-index:200;
+    display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 50% 20%, #2a0f1c, #0f0f13 70%);
+    padding:20px;
+  }
+  .login-box {
+    width:100%; max-width:340px; background:#1b1b22;
+    border:1px solid #2a2a33; border-radius:18px; padding:26px 22px;
+    text-align:center;
+  }
+  .login-logo {
+    width:64px; height:64px; margin:0 auto 14px; border-radius:16px;
+    background:linear-gradient(135deg,#c2185b,#e91e63);
+    display:flex; align-items:center; justify-content:center; font-size:32px;
+  }
+  .login-box h2 { font-size:19px; margin-bottom:4px; }
+  .login-box p { font-size:12px; opacity:.6; margin-bottom:18px; }
+  .login-box input {
+    width:100%; padding:12px 14px; margin-bottom:10px;
+    border-radius:10px; border:1px solid #2a2a33; background:#0f0f13;
+    color:#fff; font-size:14px;
+  }
+  .login-box input:focus { outline:none; border-color:#e91e63; }
+  .login-btn {
+    width:100%; padding:12px; border:none; border-radius:10px;
+    background:linear-gradient(135deg,#c2185b,#e91e63); color:#fff;
+    font-weight:700; font-size:14px; margin-top:6px;
+  }
+  .login-btn:active { opacity:.85; }
+  .login-err { color:#f44336; font-size:12px; margin-top:10px; min-height:14px; }
+
+  /* ===== APP ===== */
+  #app { display:none; padding-bottom:90px; }
+  header {
+    position:sticky; top:0; z-index:10;
+    background:linear-gradient(135deg,#c2185b,#e91e63);
+    padding:14px 16px 12px; display:flex; align-items:center; gap:10px;
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+  }
+  .logo { width:36px; height:36px; flex-shrink:0; background:#fff; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  header h1 { font-size:18px; font-weight:700; }
+  header .sub { font-size:11px; opacity:.85; }
+  .icon-btn {
+    margin-left:8px; width:34px; height:34px; border:none; border-radius:9px;
+    background:rgba(255,255,255,.18); color:#fff; font-size:16px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .status { margin-left:auto; font-size:11px; padding:4px 9px; border-radius:20px; background:rgba(255,255,255,.18); display:flex; align-items:center; gap:5px; }
+  .dot { width:7px; height:7px; border-radius:50%; background:#4caf50; }
+  .dot.off { background:#f44336; }
+
+  .wrap { padding:14px; max-width:640px; margin:0 auto; }
+  .search { width:100%; padding:11px 14px; border-radius:12px; border:1px solid #2a2a33; background:#1b1b22; color:#fff; font-size:14px; margin-bottom:12px; }
+  .search:focus { outline:none; border-color:#e91e63; }
+
+  .summary { display:flex; gap:10px; margin-bottom:14px; }
+  .card { flex:1; background:#1b1b22; border:1px solid #2a2a33; border-radius:12px; padding:10px; text-align:center; }
+  .card b { display:block; font-size:18px; color:#e91e63; }
+  .card span { font-size:10px; opacity:.7; }
+
+  /* Line (Линия) */
+  .line {
+    background:#17171d; border:1px solid #2a2a33; border-radius:16px;
+    margin-bottom:12px; overflow:hidden;
+  }
+  .line-head {
+    display:flex; align-items:center; gap:10px; padding:13px 14px; cursor:pointer;
+  }
+  .line-head .chev { transition:transform .2s; opacity:.6; font-size:12px; }
+  .line-head.open .chev { transform:rotate(90deg); }
+  .line-title { flex:1; font-size:15px; font-weight:700; word-break:break-word; }
+  .line-title[contenteditable="true"] { outline:none; border-bottom:1px dashed #e91e63; }
+  .line-count { font-size:11px; opacity:.6; background:#0f0f13; padding:3px 8px; border-radius:20px; }
+  .line-del { border:none; background:transparent; color:#888; font-size:15px; padding:4px 6px; }
+  .line-del:active { color:#f44336; }
+  .line-body { display:none; padding:0 12px 12px; }
+  .line-body.open { display:block; }
+
+  /* Row (Ряд) */
+  .rowblock {
+    background:#1b1b22; border:1px solid #2a2a33; border-radius:12px;
+    margin-top:8px; overflow:hidden;
+  }
+  .row-head { display:flex; align-items:center; gap:8px; padding:10px 12px; cursor:pointer; }
+  .row-head .chev { transition:transform .2s; opacity:.5; font-size:11px; }
+  .row-head.open .chev { transform:rotate(90deg); }
+  .row-title { flex:1; font-size:13.5px; font-weight:600; opacity:.9; }
+  .row-title[contenteditable="true"] { outline:none; border-bottom:1px dashed #e91e63; }
+  .row-count { font-size:10px; opacity:.55; }
+  .row-del { border:none; background:transparent; color:#777; font-size:13px; padding:3px 5px; }
+  .row-del:active { color:#f44336; }
+  .row-body { display:none; padding:0 10px 10px; }
+  .row-body.open { display:block; }
+
+  /* Model (Модель) */
+  .model {
+    background:#0f0f13; border:1px solid #26262e; border-radius:10px;
+    padding:9px 10px; margin-top:7px; display:flex; align-items:center; gap:8px;
+  }
+  .model-name { flex:1; font-size:13.5px; word-break:break-word; }
+  .model-name[contenteditable="true"] { outline:none; border-bottom:1px dashed #e91e63; }
+  .qty-ctrl { display:flex; align-items:center; gap:6px; background:#1b1b22; border-radius:9px; padding:3px; }
+  .qty-btn { width:26px; height:26px; border:none; border-radius:7px; background:#2a2a33; color:#fff; font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .qty-btn:active { background:#e91e63; }
+  .qty-val { min-width:26px; text-align:center; font-size:13.5px; font-weight:700; }
+  .model-del { border:none; background:transparent; color:#777; font-size:13px; padding:3px 5px; }
+  .model-del:active { color:#f44336; }
+
+  /* add rows/models inline forms */
+  .add-inline { display:flex; gap:6px; margin-top:9px; }
+  .add-inline input { flex:1; min-width:0; padding:9px 10px; border-radius:9px; border:1px solid #2a2a33; background:#0f0f13; color:#fff; font-size:13px; }
+  .add-inline input:focus { outline:none; border-color:#e91e63; }
+  .add-inline .qtyf { flex:0 0 62px; }
+  .add-inline button { border:none; border-radius:9px; background:#e91e63; color:#fff; font-weight:700; width:36px; font-size:18px; flex-shrink:0; }
+
+  .empty { text-align:center; opacity:.5; padding:40px 20px; font-size:13px; }
+
+  /* Add Line bar */
+  .fab-bar {
+    position:fixed; bottom:0; left:0; right:0; background:#15151b;
+    border-top:1px solid #2a2a33; padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    display:flex; gap:8px; max-width:640px; margin:0 auto;
+  }
+  .fab-bar input { flex:1; border:1px solid #2a2a33; background:#0f0f13; color:#fff; border-radius:10px; padding:11px 12px; font-size:14px; }
+  .fab-bar input:focus { outline:none; border-color:#e91e63; }
+  .add-btn { background:linear-gradient(135deg,#c2185b,#e91e63); border:none; color:#fff; font-weight:700; font-size:22px; width:44px; border-radius:10px; flex-shrink:0; }
+  .add-btn:active { opacity:.8; }
+
+  .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#e91e63; color:#fff; padding:9px 16px; border-radius:20px; font-size:13px; opacity:0; pointer-events:none; transition:opacity .25s; z-index:100; }
+  .toast.show { opacity:1; }
+
+  /* Settings modal */
+  #settingsModal { position:fixed; inset:0; z-index:150; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.6); padding:20px; }
+  #settingsModal.open { display:flex; }
+  .modal-box { width:100%; max-width:340px; background:#1b1b22; border:1px solid #2a2a33; border-radius:16px; padding:20px; }
+  .modal-box h3 { font-size:16px; margin-bottom:14px; }
+  .modal-box input { width:100%; padding:11px 12px; margin-bottom:10px; border-radius:9px; border:1px solid #2a2a33; background:#0f0f13; color:#fff; font-size:13px; }
+  .modal-box input:focus { outline:none; border-color:#e91e63; }
+  .modal-row { display:flex; gap:8px; margin-top:6px; }
+  .modal-row button { flex:1; padding:11px; border:none; border-radius:9px; font-weight:700; font-size:13px; }
+  .btn-primary { background:linear-gradient(135deg,#c2185b,#e91e63); color:#fff; }
+  .btn-secondary { background:#2a2a33; color:#fff; }
+  .modal-err { color:#f44336; font-size:12px; margin-top:4px; min-height:14px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">📦</div>
+    <h2>Склад</h2>
+    <p>Введите логин и пароль</p>
+    <input id="loginUser" placeholder="Логин" autocomplete="username">
+    <input id="loginPass" type="password" placeholder="Пароль" autocomplete="current-password">
+    <button class="login-btn" id="loginBtn">Войти</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="logo">📦</div>
+    <div>
+      <h1>Склад</h1>
+      <div class="sub">линия → ряд → модель</div>
+    </div>
+    <button class="icon-btn" id="settingsBtn">⚙️</button>
+    <button class="icon-btn" id="logoutBtn">🚪</button>
+    <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">офлайн</span></div>
+  </header>
+
+  <div class="wrap">
+    <input class="search" id="search" placeholder="🔍 Поиск модели...">
+    <div class="summary">
+      <div class="card"><b id="totalLines">0</b><span>линий</span></div>
+      <div class="card"><b id="totalRows">0</b><span>рядов</span></div>
+      <div class="card"><b id="totalQty">0</b><span>шт всего</span></div>
+    </div>
+    <div id="list"></div>
+    <div class="empty" id="emptyMsg">Пока пусто. Добавьте первую линию ниже 👇</div>
+  </div>
+
+  <div class="fab-bar">
+    <input id="newLineName" placeholder="Название линии">
+    <button class="add-btn" id="addLineBtn">+</button>
+  </div>
+</div>
+
+<!-- SETTINGS / CHANGE PASSWORD -->
+<div id="settingsModal">
+  <div class="modal-box">
+    <h3>Смена пароля</h3>
+    <input id="curPass" type="password" placeholder="Текущий пароль">
+    <input id="newPass" type="password" placeholder="Новый пароль">
+    <input id="newPass2" type="password" placeholder="Повторите новый пароль">
+    <div class="modal-err" id="settingsErr"></div>
+    <div class="modal-row">
+      <button class="btn-secondary" id="settingsCancel">Отмена</button>
+      <button class="btn-primary" id="settingsSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA_KEY = 'sklad_data_v2';
+const AUTH_KEY = 'sklad_pass_v2';
+const LOGIN_NAME = 'admin';
+const DEFAULT_PASS = '2005';
+const SESSION_KEY = 'sklad_session';
+
+let data = []; // [{id,name,rows:[{id,name,models:[{id,name,qty,updated}]}]}]
+let openLines = new Set();
+let openRows = new Set();
+
+/* ---------- storage ---------- */
+function loadData() {
+  try { data = JSON.parse(localStorage.getItem(DATA_KEY)) || []; }
+  catch(e) { data = []; }
+}
+function saveData() {
+  try { localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
+  catch(e) { showToast('Ошибка сохранения'); }
+}
+function getPass() {
+  return localStorage.getItem(AUTH_KEY) || DEFAULT_PASS;
+}
+function setPass(p) {
+  localStorage.setItem(AUTH_KEY, p);
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(showToast._tm);
+  showToast._tm = setTimeout(()=>t.classList.remove('show'), 1400);
+}
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ---------- login ---------- */
+function checkSession() {
+  if (sessionStorage.getItem(SESSION_KEY) === '1') {
+    showApp();
+  }
+}
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginPass').focus(); });
+
+function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginErr');
+  if (user === LOGIN_NAME && pass === getPass()) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    err.textContent = '';
+    showApp();
+  } else {
+    err.textContent = 'Неверный логин или пароль';
+  }
+}
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadData();
+  render();
+  updateOnlineStatus();
+}
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginPass').value = '';
+});
+
+/* ---------- settings / change password ---------- */
+document.getElementById('settingsBtn').addEventListener('click', () => {
+  document.getElementById('curPass').value = '';
+  document.getElementById('newPass').value = '';
+  document.getElementById('newPass2').value = '';
+  document.getElementById('settingsErr').textContent = '';
+  document.getElementById('settingsModal').classList.add('open');
+});
+document.getElementById('settingsCancel').addEventListener('click', () => {
+  document.getElementById('settingsModal').classList.remove('open');
+});
+document.getElementById('settingsSave').addEventListener('click', () => {
+  const cur = document.getElementById('curPass').value;
+  const n1 = document.getElementById('newPass').value;
+  const n2 = document.getElementById('newPass2').value;
+  const err = document.getElementById('settingsErr');
+  if (cur !== getPass()) { err.textContent = 'Текущий пароль неверен'; return; }
+  if (!n1 || n1.length < 3) { err.textContent = 'Новый пароль минимум 3 символа'; return; }
+  if (n1 !== n2) { err.textContent = 'Пароли не совпадают'; return; }
+  setPass(n1);
+  document.getElementById('settingsModal').classList.remove('open');
+  showToast('Пароль изменён');
+});
+
+/* ---------- render ---------- */
+function render() {
+  const list = document.getElementById('list');
+  const emptyMsg = document.getElementById('emptyMsg');
+  const q = document.getElementById('search').value.trim().toLowerCase();
+
+  list.innerHTML = '';
+  let totalRows = 0, totalQty = 0, anyMatch = false;
+
+  data.forEach(line => {
+    let lineHasMatch = !q;
+    const rowsHtml = [];
+
+    line.rows.forEach(row => {
+      totalRows++;
+      let rowHasMatch = !q;
+      const modelsHtml = [];
+
+      row.models.forEach(m => {
+        totalQty += Number(m.qty || 0);
+        const matches = m.name.toLowerCase().includes(q);
+        if (matches) { rowHasMatch = true; lineHasMatch = true; anyMatch = true; }
+        if (!q || matches) {
+          modelsHtml.push(`
+            <div class="model">
+              <div class="model-name" contenteditable="true" data-type="model" data-line="${line.id}" data-row="${row.id}" data-model="${m.id}">${escapeHtml(m.name)}</div>
+              <div class="qty-ctrl">
+                <button class="qty-btn" data-act="dec" data-line="${line.id}" data-row="${row.id}" data-model="${m.id}">−</button>
+                <div class="qty-val">${m.qty}</div>
+                <button class="qty-btn" data-act="inc" data-line="${line.id}" data-row="${row.id}" data-model="${m.id}">+</button>
+              </div>
+              <button class="model-del" data-act="delmodel" data-line="${line.id}" data-row="${row.id}" data-model="${m.id}">✕</button>
+            </div>`);
+        }
+      });
+
+      if (!q || rowHasMatch) {
+        const isOpen = openRows.has(row.id) || (q && rowHasMatch);
+        rowsHtml.push(`
+          <div class="rowblock">
+            <div class="row-head ${isOpen?'open':''}" data-act="togglerow" data-row="${row.id}">
+              <span class="chev">▶</span>
+              <div class="row-title" contenteditable="true" data-type="row" data-line="${line.id}" data-row="${row.id}">${escapeHtml(row.name)}</div>
+              <span class="row-count">${row.models.length} моделей</span>
+              <button class="row-del" data-act="delrow" data-line="${line.id}" data-row="${row.id}">✕</button>
+            </div>
+            <div class="row-body ${isOpen?'open':''}" data-rowbody="${row.id}">
+              ${modelsHtml.join('') || '<div class="empty" style="padding:14px;">Нет моделей</div>'}
+              <div class="add-inline">
+                <input placeholder="Модель" data-newmodelname="${row.id}">
+                <input class="qtyf" type="number" placeholder="Кол-во" value="1" data-newmodelqty="${row.id}">
+                <button data-act="addmodel" data-line="${line.id}" data-row="${row.id}">+</button>
+              </div>
+            </div>
+          </div>`);
+      }
+    });
+
+    if (!q || lineHasMatch) {
+      const isOpen = openLines.has(line.id) || (q && lineHasMatch);
+      const el = document.createElement('div');
+      el.className = 'line';
+      el.innerHTML = `
+        <div class="line-head ${isOpen?'open':''}" data-act="toggleline" data-line="${line.id}">
+          <span class="chev">▶</span>
+          <div class="line-title" contenteditable="true" data-type="line" data-line="${line.id}">${escapeHtml(line.name)}</div>
+          <span class="line-count">${line.rows.length} рядов</span>
+          <button class="line-del" data-act="delline" data-line="${line.id}">✕</button>
+        </div>
+        <div class="line-body ${isOpen?'open':''}" data-linebody="${line.id}">
+          ${rowsHtml.join('')}
+          <div class="add-inline">
+            <input placeholder="Новый ряд" data-newrowname="${line.id}">
+            <button data-act="addrow" data-line="${line.id}">+</button>
+          </div>
+        </div>`;
+      list.appendChild(el);
+    }
+  });
+
+  emptyMsg.style.display = (data.length === 0 || (q && !anyMatch && data.length>0)) ? 'block' : 'none';
+  if (q && data.length>0 && !anyMatch) emptyMsg.textContent = 'Ничего не найдено';
+  else emptyMsg.textContent = 'Пока пусто. Добавьте первую линию ниже 👇';
+
+  document.getElementById('totalLines').textContent = data.length;
+  document.getElementById('totalRows').textContent = totalRows;
+  document.getElementById('totalQty').textContent = totalQty;
+}
+
+/* ---------- events: add line ---------- */
+document.getElementById('addLineBtn').addEventListener('click', addLine);
+document.getElementById('newLineName').addEventListener('keydown', e => { if (e.key==='Enter') addLine(); });
+function addLine() {
+  const inp = document.getElementById('newLineName');
+  const name = inp.value.trim();
+  if (!name) { showToast('Введите название линии'); return; }
+  const line = { id: uid(), name, rows: [] };
+  data.unshift(line);
+  openLines.add(line.id);
+  saveData(); render();
+  inp.value = '';
+  showToast('Линия добавлена');
+}
+
+/* ---------- delegated click events ---------- */
+document.getElementById('list').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  const act = btn.dataset.act;
+  const lineId = btn.dataset.line;
+  const rowId = btn.dataset.row;
+  const modelId = btn.dataset.model;
+
+  if (act === 'toggleline') {
+    if (openLines.has(lineId)) openLines.delete(lineId); else openLines.add(lineId);
+    render(); return;
+  }
+  if (act === 'togglerow') {
+    if (openRows.has(rowId)) openRows.delete(rowId); else openRows.add(rowId);
+    render(); return;
+  }
+
+  const line = data.find(l => l.id === lineId);
+
+  if (act === 'delline') {
+    if (confirm('Удалить линию "' + line.name + '" со всеми рядами и моделями?')) {
+      data = data.filter(l => l.id !== lineId);
+      saveData(); render(); showToast('Линия удалена');
+    }
+    return;
+  }
+
+  if (act === 'addrow') {
+    const inp = document.querySelector(`[data-newrowname="${lineId}"]`);
+    const name = inp.value.trim();
+    if (!name) { showToast('Введите название ряда'); return; }
+    const row = { id: uid(), name, models: [] };
+    line.rows.push(row);
+    openRows.add(row.id);
+    saveData(); render(); showToast('Ряд добавлен');
+    return;
+  }
+
+  const row = line && line.rows.find(r => r.id === rowId);
+
+  if (act === 'delrow') {
+    if (confirm('Удалить ряд "' + row.name + '" со всеми моделями?')) {
+      line.rows = line.rows.filter(r => r.id !== rowId);
+      saveData(); render(); showToast('Ряд удалён');
+    }
+    return;
+  }
+
+  if (act === 'addmodel') {
+    const nameInp = document.querySelector(`[data-newmodelname="${rowId}"]`);
+    const qtyInp = document.querySelector(`[data-newmodelqty="${rowId}"]`);
+    const name = nameInp.value.trim();
+    const qty = Number(qtyInp.value) || 0;
+    if (!name) { showToast('Введите название модели'); return; }
+    const existing = row.models.find(m => m.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      existing.qty = Number(existing.qty) + qty;
+      existing.updated = Date.now();
+      showToast('Количество обновлено');
+    } else {
+      row.models.push({ id: uid(), name, qty, updated: Date.now() });
+      showToast('Модель добавлена');
+    }
+    saveData(); render();
+    return;
+  }
+
+  const model = row && row.models.find(m => m.id === modelId);
+
+  if (act === 'inc') { model.qty = Number(model.qty)+1; model.updated = Date.now(); saveData(); render(); return; }
+  if (act === 'dec') { model.qty = Math.max(0, Number(model.qty)-1); model.updated = Date.now(); saveData(); render(); return; }
+  if (act === 'delmodel') {
+    if (confirm('Удалить модель "' + model.name + '"?')) {
+      row.models = row.models.filter(m => m.id !== modelId);
+      saveData(); render(); showToast('Модель удалена');
+    }
+    return;
+  }
+});
+
+/* ---------- inline editing (contenteditable blur) ---------- */
+document.getElementById('list').addEventListener('blur', (e) => {
+  const el = e.target.closest('[contenteditable="true"]');
+  if (!el) return;
+  const type = el.dataset.type;
+  const lineId = el.dataset.line;
+  const rowId = el.dataset.row;
+  const modelId = el.dataset.model;
+  const newVal = el.textContent.trim();
+  const line = data.find(l => l.id === lineId);
+
+  if (type === 'line' && line && newVal && newVal !== line.name) {
+    line.name = newVal; saveData(); showToast('Сохранено');
+  }
+  if (type === 'row') {
+    const row = line && line.rows.find(r => r.id === rowId);
+    if (row && newVal && newVal !== row.name) { row.name = newVal; saveData(); showToast('Сохранено'); }
+  }
+  if (type === 'model') {
+    const row = line && line.rows.find(r => r.id === rowId);
+    const model = row && row.models.find(m => m.id === modelId);
+    if (model && newVal && newVal !== model.name) { model.name = newVal; model.updated = Date.now(); saveData(); showToast('Сохранено'); }
+  }
+  render();
+}, true);
+
+/* enter-to-add for dynamically created inline inputs */
+document.getElementById('list').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  if (e.target.matches('[data-newrowname]')) {
+    const lineId = e.target.dataset.newrowname;
+    document.querySelector(`[data-act="addrow"][data-line="${lineId}"]`).click();
+  }
+  if (e.target.matches('[data-newmodelname]') || e.target.matches('[data-newmodelqty]')) {
+    const rowId = e.target.dataset.newmodelname || e.target.dataset.newmodelqty;
+    const btn = document.querySelector(`[data-act="addmodel"][data-row="${rowId}"]`);
+    if (btn) btn.click();
+  }
+});
+
+document.getElementById('search').addEventListener('input', render);
+
+/* ---------- online status ---------- */
+function updateOnlineStatus() {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  if (navigator.onLine) { dot.classList.remove('off'); txt.textContent = 'онлайн'; }
+  else { dot.classList.add('off'); txt.textContent = 'офлайн'; }
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+checkSession();
+</script>
+</body>
+</html>

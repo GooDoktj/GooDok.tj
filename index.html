@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>Склад</title>
+<link id="faviconLink" rel="icon" type="image/svg+xml" href="">
+<link id="appleIconLink" rel="apple-touch-icon" href="">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Склад">
+<link id="manifestLink" rel="manifest" href="">
+<style>
+  :root{
+    --bg:#0d0f14;
+    --bg2:#141822;
+    --card:#1a1f2b;
+    --card2:#212736;
+    --accent:#5b8dff;
+    --accent2:#3ddc97;
+    --accent-grad: linear-gradient(135deg,#5b8dff,#3ddc97);
+    --danger:#ff5c6c;
+    --danger-grad: linear-gradient(135deg,#ff6b6b,#ff3d5f);
+    --text:#f1f3f9;
+    --muted:#8b93a7;
+    --border:#262c3b;
+    --radius:16px;
+    --radius-sm:11px;
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --fs-base: clamp(14px, 3.6vw, 16px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    font-size:var(--fs-base);
+    overscroll-behavior-y:none;}
+  #app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:560px;margin:0 auto;position:relative;overflow:hidden;background:var(--bg);}
+
+  button{font-family:inherit;}
+  button:focus-visible, input:focus-visible, select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  /* ---------- BUTTON SYSTEM (MODERN) ---------- */
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;padding:clamp(12px,3.4vw,15px);
+    border:none;border-radius:var(--radius-sm);
+    background:var(--accent-grad);
+    color:#06110b;
+    font-size:clamp(14px,3.7vw,16px);font-weight:700;
+    cursor:pointer;
+    box-shadow:0 6px 18px -6px rgba(91,141,255,.55);
+    transition:transform .12s ease, box-shadow .12s ease, opacity .12s;
+    -webkit-user-select:none;user-select:none;
+  }
+  .btn:active{transform:scale(.97);box-shadow:0 3px 10px -4px rgba(91,141,255,.5);}
+  .btn.secondary{background:var(--card2);color:var(--text);box-shadow:none;border:1px solid var(--border);}
+  .btn.ghost{background:transparent;color:var(--text);border:1.5px solid var(--border);box-shadow:none;}
+  .btn.danger{background:var(--danger-grad);color:#fff;box-shadow:0 6px 18px -6px rgba(255,92,108,.5);}
+  .btn.sm{padding:9px 12px;font-size:12.5px;width:auto;border-radius:10px;}
+  .btn:disabled{opacity:.5;pointer-events:none;}
+
+  .icon-btn{
+    width:36px;height:36px;min-width:36px;border-radius:11px;border:1px solid var(--border);
+    background:var(--card2);color:var(--text);display:flex;align-items:center;justify-content:center;
+    font-size:16px;cursor:pointer;transition:.15s;
+  }
+  .icon-btn:active{transform:scale(.92);background:var(--card);}
+  .icon-btn.danger-hover:active{background:rgba(255,92,108,.15);color:var(--danger);}
+
+  /* ---------- AUTH ---------- */
+  .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding:clamp(20px,6vw,32px);overflow-y:auto;}
+  .logo{text-align:center;margin-bottom:clamp(18px,5vw,26px);}
+  .logo .box{width:clamp(56px,16vw,72px);height:clamp(56px,16vw,72px);border-radius:22px;background:var(--accent-grad);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 10px 30px -8px rgba(91,141,255,.55);color:#fff;}
+  .logo .box svg{width:52%;height:52%;}
+  .logo h1{font-size:clamp(20px,5.5vw,24px);margin:0;letter-spacing:.3px;font-weight:800;}
+  .logo p{color:var(--muted);font-size:12.5px;margin:5px 0 0;}
+
+  .tabs{display:flex;background:var(--card);border-radius:14px;padding:4px;margin-bottom:clamp(16px,5vw,22px);}
+  .tabs button{flex:1;border:none;background:transparent;color:var(--muted);padding:11px;border-radius:11px;font-size:13.5px;font-weight:700;cursor:pointer;transition:.2s;}
+  .tabs button.active{background:var(--accent-grad);color:#06110b;box-shadow:0 4px 14px -4px rgba(91,141,255,.5);}
+
+  .field{margin-bottom:13px;}
+  .field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:.2px;}
+  .field input, .field select{width:100%;padding:13px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:16px;outline:none;transition:.15s;}
+  .field input:focus{border-color:var(--accent);background:var(--card2);}
+
+  .err{color:var(--danger);font-size:12.5px;margin-top:8px;min-height:16px;font-weight:600;}
+  .hint{color:var(--muted);font-size:11.5px;margin-top:16px;text-align:center;line-height:1.6;}
+
+  /* ---------- WELCOME ANIMATION ---------- */
+  .welcome-overlay{position:fixed;inset:0;background:radial-gradient(circle at 50% 28%,#1c2436,#0a0c11 78%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;animation:fadeIn .4s ease;padding:20px;text-align:center;}
+  .welcome-overlay.hide{animation:fadeOut .5s ease forwards;}
+  .welcome-ring{width:clamp(74px,20vw,94px);height:clamp(74px,20vw,94px);border-radius:50%;background:var(--accent-grad);display:flex;align-items:center;justify-content:center;font-size:clamp(32px,10vw,42px);animation:pop .6s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 60px rgba(91,141,255,.5);}
+  .welcome-overlay h2{margin:22px 0 6px;font-size:clamp(16px,4.6vw,20px);color:var(--muted);font-weight:600;animation:slideUp .5s ease .1s both;}
+  .welcome-overlay h1{margin:0;font-size:clamp(22px,6.5vw,29px);background:linear-gradient(135deg,#fff,#9db6ff);-webkit-background-clip:text;background-clip:text;color:transparent;animation:slideUp .5s ease .2s both;font-weight:800;}
+  .welcome-overlay .dots{display:flex;gap:6px;margin-top:26px;}
+  .welcome-overlay .dots span{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 1.2s infinite ease-in-out;}
+  .welcome-overlay .dots span:nth-child(2){animation-delay:.2s;}
+  .welcome-overlay .dots span:nth-child(3){animation-delay:.4s;}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes fadeOut{from{opacity:1}to{opacity:0}}
+  @keyframes pop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- APP SHELL ---------- */
+  .topbar{padding:calc(14px + var(--safe-t)) 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--bg2);gap:10px;}
+  .topbar .who{display:flex;flex-direction:column;min-width:0;}
+  .topbar .who b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw;}
+  .topbar .who span{font-size:11.5px;color:var(--muted);}
+  .badge{font-size:9.5px;padding:4px 9px;border-radius:20px;background:var(--card2);color:var(--accent2);font-weight:800;letter-spacing:.3px;white-space:nowrap;border:1px solid var(--border);}
+  .logout{background:none;border:none;color:var(--muted);font-size:11.5px;cursor:pointer;font-weight:600;}
+
+  .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px clamp(12px,4vw,18px);padding-bottom:calc(96px + var(--safe-b));}
+
+  .empty-state{text-align:center;padding:60px 20px;color:var(--muted);font-size:13.5px;}
+  .empty-state .ico{font-size:40px;margin-bottom:12px;}
+
+  .sync-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:9px 12px;margin-bottom:14px;font-size:11.5px;color:var(--muted);}
+  .sync-bar .dot{width:7px;height:7px;border-radius:50%;background:var(--accent2);flex:none;}
+  .sync-bar .dot.off{background:var(--muted);}
+  .sync-bar .dot.spin{border:2px solid rgba(91,141,255,.3);border-top-color:var(--accent);background:none;width:11px;height:11px;animation:spin .8s linear infinite;}
+  .sync-bar .refresh{background:none;border:none;color:var(--accent);font-weight:700;font-size:11.5px;cursor:pointer;}
+
+  /* pending access block */
+  .pending-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(22px,7vw,30px) clamp(18px,6vw,24px);text-align:center;margin-top:clamp(24px,10vw,44px);}
+  .pending-card .ico{font-size:40px;margin-bottom:10px;}
+  .pending-card h3{margin:0 0 8px;font-size:16px;}
+  .pending-card p{color:var(--muted);font-size:12.5px;line-height:1.6;margin:0 0 18px;}
+  .tg-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#2AABEE,#229ED9);color:#fff;padding:12px 22px;border-radius:13px;text-decoration:none;font-weight:700;font-size:13.5px;box-shadow:0 6px 18px -6px rgba(34,158,217,.6);}
+
+  /* structure: lines/rows/items */
+  .line{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+  .line-head{display:flex;align-items:center;justify-content:space-between;padding:14px 15px;cursor:pointer;gap:8px;}
+  .line-head .ttl{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14.5px;min-width:0;}
+  .line-head .ttl .txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .line-head .chev{transition:.2s;color:var(--muted);flex:none;}
+  .line-head .chev.open{transform:rotate(90deg);}
+  .line-body{display:none;padding:0 11px 12px;}
+  .line-body.open{display:block;animation:slideUp .25s ease;}
+  .row{background:var(--card2);border-radius:13px;margin-bottom:8px;overflow:hidden;}
+  .row-head{display:flex;align-items:center;justify-content:space-between;padding:11px 12px;cursor:pointer;gap:8px;}
+  .row-head .ttl{font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:8px;min-width:0;}
+  .row-head .ttl .txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .row-body{display:none;padding:0 9px 10px;}
+  .row-body.open{display:block;}
+
+  .item{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:12px;padding:10px 11px;margin-top:7px;gap:8px;}
+  .item .info{display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+  .item .sku{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .item .loc{font-size:10.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .qty-ctrl{display:flex;align-items:center;gap:7px;flex:none;}
+  .qty-ctrl button{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.12s;}
+  .qty-ctrl button:active{transform:scale(.9);background:var(--card2);}
+  .qty-ctrl .val{min-width:26px;text-align:center;font-weight:800;font-size:13.5px;}
+  .del-x{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:5px 6px;border-radius:8px;transition:.12s;}
+  .del-x:active{background:rgba(255,92,108,.15);color:var(--danger);}
+
+  .add-inline{display:flex;gap:7px;margin-top:9px;}
+  .add-inline input{flex:1;min-width:0;padding:10px 11px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text);font-size:16px;}
+  .add-inline input.qty{max-width:58px;flex:none;}
+  .add-inline button{background:var(--accent-grad);border:none;color:#06110b;border-radius:10px;padding:0 15px;font-weight:800;cursor:pointer;font-size:15px;flex:none;}
+  .add-inline button:active{transform:scale(.94);}
+
+  .add-line-btn{width:100%;padding:14px;border-radius:var(--radius);border:1.5px dashed var(--border);background:transparent;color:var(--accent);font-weight:700;font-size:13.5px;cursor:pointer;margin-top:4px;transition:.15s;}
+  .add-line-btn:active{background:var(--card);}
+
+  /* search */
+  .search-box{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;}
+  .search-box input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text);font-size:16px;}
+  .search-result{background:var(--card);border-radius:13px;padding:12px 13px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .search-result .info{min-width:0;}
+  .search-result .info .sku{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .search-result .info .loc{font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* profile */
+  .profile-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(16px,5vw,20px);margin-bottom:14px;}
+  .profile-avatar{width:52px;height:52px;border-radius:16px;background:var(--accent-grad);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;color:#06110b;margin-bottom:12px;}
+  .profile-card h3{margin:0 0 3px;font-size:16px;}
+  .profile-card .sub{color:var(--muted);font-size:12.5px;margin-bottom:2px;}
+  .section-title{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:22px 0 10px;font-weight:800;}
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+  .stat-tile{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 8px;text-align:center;}
+  .stat-num{font-size:clamp(18px,5.5vw,22px);font-weight:800;color:var(--text);}
+  .stat-label{font-size:10.5px;color:var(--muted);margin-top:4px;line-height:1.35;}
+  .user-row{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:11px 13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .user-row .info{min-width:0;}
+  .user-row .info b{font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .user-row .info span{font-size:11px;color:var(--muted);}
+  select.access-sel{background:var(--card2);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:8px 9px;font-size:11.5px;font-weight:700;flex:none;}
+
+  /* bottom nav */
+  .bottom-nav{position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(20,24,34,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--border);padding:8px 10px calc(8px + var(--safe-b));max-width:560px;margin:0 auto;}
+  .bottom-nav button{flex:1;background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;padding:6px;cursor:pointer;border-radius:13px;transition:.15s;}
+  .bottom-nav button.active{color:var(--accent);background:rgba(91,141,255,.12);}
+  .bottom-nav button .ic{width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
+  .bottom-nav button .ic svg{width:22px;height:22px;transition:.15s;}
+  .bottom-nav button.active .ic svg{filter:drop-shadow(0 0 6px rgba(91,141,255,.5));}
+  .bottom-nav button:active{transform:scale(.94);}
+
+  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border);color:var(--text);padding:11px 18px;border-radius:13px;font-size:12.5px;z-index:1000;opacity:0;transition:.25s;pointer-events:none;box-shadow:0 10px 30px -8px rgba(0,0,0,.5);max-width:88%;text-align:center;}
+  .toast.show{opacity:1;bottom:112px;}
+
+  ::-webkit-scrollbar{width:0;height:0;}
+
+  /* small phones */
+  @media (max-width:360px){
+    .content{padding:12px 10px calc(94px + var(--safe-b));}
+    .topbar{padding:calc(12px + var(--safe-t)) 14px 10px;}
+  }
+  /* larger phones / small tablets */
+  @media (min-width:480px){
+    #app{border-left:1px solid var(--border);border-right:1px solid var(--border);}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Firebase SDK (compat, без сборщиков — обычные script-теги) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-messaging-compat.js"></script>
+
+<script>
+/* ============================= ICON / MANIFEST (генерируется кодом, без внешних фото) ============================= */
+/* Иконка приложения — это векторная SVG-графика, целиком описанная прямо в JS (строка ниже).
+   Никакие внешние картинки/фотографии не используются: PNG-версии для favicon,
+   иконки на главном экране (iOS) и PWA-манифеста рисуются "на лету" через <canvas>. */
+const APP_ICON_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5b8dff"/>
+      <stop offset="100%" stop-color="#3ddc97"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="176" r="210" fill="#ffffff" opacity="0.07"/>
+  <g fill="none" stroke="#ffffff" stroke-width="22" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M256 96 L400 168 L400 344 L256 416 L112 344 L112 168 Z"/>
+    <path d="M112 168 L256 240 L400 168"/>
+    <path d="M256 240 L256 416"/>
+  </g>
+</svg>`.trim();
+
+function svgToPngDataUrl(svgString, size){
+  return new Promise((resolve)=>{
+    const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+    const img = new Image();
+    img.onload = function(){
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, size, size);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = function(){ resolve(null); };
+    img.src = svgUrl;
+  });
+}
+
+async function setupIcons(){
+  const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(APP_ICON_SVG);
+  document.getElementById('faviconLink').href = svgDataUrl;
+
+  const png180 = await svgToPngDataUrl(APP_ICON_SVG, 180);
+  if(png180) document.getElementById('appleIconLink').href = png180;
+
+  const png192 = await svgToPngDataUrl(APP_ICON_SVG, 192);
+  const png512 = await svgToPngDataUrl(APP_ICON_SVG, 512);
+
+  const manifest = {
+    name: "Склад",
+    short_name: "Склад",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#0d0f14",
+    theme_color: "#0d0f14",
+    icons: [
+      png192 ? { src: png192, sizes: "192x192", type: "image/png" } : null,
+      png512 ? { src: png512, sizes: "512x512", type: "image/png" } : null
+    ].filter(Boolean)
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  document.getElementById('manifestLink').href = URL.createObjectURL(blob);
+}
+setupIcons();
+
+/* ---- Иконки нижней навигации и логотипа — тоже инлайн-SVG, без эмодзи и файлов ---- */
+const NAV_ICONS = {
+  home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H10v-6h4v6h3.5a1 1 0 0 0 1-1v-9"/></svg>`,
+  search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>`,
+  profile: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.2" r="3.7"/><path d="M4.5 20c0-4 3.5-6.2 7.5-6.2s7.5 2.2 7.5 6.2"/></svg>`,
+  box: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 20.5 7.5v9L12 21 3.5 16.5v-9Z"/><path d="M3.5 7.5 12 12l8.5-4.5"/><path d="M12 12v9"/></svg>`,
+  history: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/></svg>`,
+  scan: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V5a1 1 0 0 1 1-1h3"/><path d="M20 8V5a1 1 0 0 0-1-1h-3"/><path d="M4 16v3a1 1 0 0 0 1 1h3"/><path d="M20 16v3a1 1 0 0 1-1 1h-3"/><line x1="4" y1="12" x2="20" y2="12"/></svg>`
+};
+
+/* ============================= FIREBASE SYNC CONFIG =============================
+   Данные склада хранятся в общей базе Firebase Realtime Database, поэтому
+   они одинаковы на всех устройствах и обновляются в реальном времени —
+   без токенов и ручного обновления.
+================================================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyD9EQvSzWKTD43QZuMDAcwOzwmFAyj85Ks",
+  authDomain: "sklad-19c1d.firebaseapp.com",
+  databaseURL: "https://sklad-19c1d-default-rtdb.firebaseio.com",
+  projectId: "sklad-19c1d",
+  storageBucket: "sklad-19c1d.firebasestorage.app",
+  messagingSenderId: "1036005110988",
+  appId: "1:1036005110988:web:be70638124e87380fdbe69",
+  measurementId: "G-690T46LNV7"
+};
+const fbApp = firebase.initializeApp(firebaseConfig);
+const fbDb = firebase.database();
+const FB_DATA_PATH = 'sklad_db'; // путь к общему объекту данных в Realtime Database
+
+/* ============================= PUSH-УВЕДОМЛЕНИЯ (FCM + Cloud Functions) =========
+   ВАЖНО: чтобы push реально работал (в т.ч. когда приложение закрыто), нужно:
+   1) Задеплоить Cloud Function из папки backend/functions (см. backend/README.md).
+   2) Разместить файл firebase-messaging-sw.js в КОРНЕ сайта (рядом с этим HTML).
+   3) В консоли Firebase → Project settings → Cloud Messaging → Web Push
+      certificates → сгенерировать пару ключей и вставить публичный ключ ниже.
+   Пока VAPID_KEY не заполнен, приложение просто не будет пытаться получить
+   токен устройства — остальной функционал при этом работает как обычно.
+================================================================================= */
+const VAPID_KEY = ''; // <-- вставьте сюда ключ из Firebase Console (Web Push certificates)
+let fcmMessaging = null;
+try{ if(firebase.messaging && firebase.messaging.isSupported && firebase.messaging.isSupported()){ fcmMessaging = firebase.messaging(); } }catch(e){ /* браузер без поддержки FCM (например, iOS Safari без PWA) */ }
+
+/* Регистрирует service worker, получает FCM-токен этого устройства и
+   сохраняет его в профиле текущего пользователя, чтобы backend знал,
+   куда слать push. Вызывается для admin/manager после входа и по кнопке
+   в профиле. Ничего не делает, если VAPID_KEY не настроен. */
+async function registerPushForCurrentUser(){
+  const u = currentUser();
+  if(!u || (u.role!=='admin' && u.role!=='manager')) return false;
+  if(!fcmMessaging || !VAPID_KEY) return false;
+  if(typeof Notification === 'undefined') return false;
+  try{
+    let perm = Notification.permission;
+    if(perm === 'default') perm = await Notification.requestPermission();
+    if(perm !== 'granted') return false;
+    const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const token = await fcmMessaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+    if(!token) return false;
+    if(!Array.isArray(u.fcmTokens)) u.fcmTokens = [];
+    if(!u.fcmTokens.includes(token)){
+      u.fcmTokens.push(token);
+      saveDB(DB);
+    }
+    return true;
+  }catch(e){
+    console.warn('Не удалось включить push-уведомления:', e);
+    return false;
+  }
+}
+
+/* ============================= DATA LAYER ============================= */
+const DB_KEY = 'sklad_db_v1';
+const SESSION_KEY = 'sklad_session_v1';
+
+function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+
+/* ---------- Хэширование паролей (SHA-256 + соль, Web Crypto API) ----------
+   Пароли больше не хранятся в открытом виде: при регистрации/смене пароля
+   создаётся случайная соль, и в базе сохраняется только соль + хэш.
+   Это не заменяет полноценный Firebase Authentication, но не даёт
+   администратору БД или любому, кто открыл консоль Firebase, увидеть
+   реальные пароли пользователей. */
+function randomSalt(){
+  const arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function sha256Hex(text){
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function hashPassword(plain, salt){ return sha256Hex(salt + ':' + plain); }
+async function setUserPassword(user, plain){
+  user.salt = randomSalt();
+  user.passwordHash = await hashPassword(plain, user.salt);
+  delete user.password; // убираем старое открытое поле, если было
+}
+async function checkUserPassword(user, plain){
+  if(user.passwordHash && user.salt) return (await hashPassword(plain, user.salt)) === user.passwordHash;
+  // старые записи без хэша (миграция ещё не прошла) — сверяем напрямую и сразу мигрируем
+  if(user.password != null) return user.password === plain;
+  return false;
+}
+
+const DEFAULT_WAREHOUSE_ID = 'wh_default';
+
+function defaultDB(){
+  return {
+    users: [
+      { login:'admin', password:'2005', fio:'Администратор', role:'admin', access:'granted', telegram:'' }
+    ],
+    warehouses: [ { id: DEFAULT_WAREHOUSE_ID, name: 'Основной склад' } ],
+    lines: [],
+    history: [], // журнал: приход/продажа товара, кто и когда
+    undoStack: []
+  };
+}
+
+/* Приводит загруженную/полученную из Firebase базу к актуальной структуре:
+   добавляет склады, привязку линий к складу, поля категории/минимума/резерва
+   у товаров — так старые данные не ломаются при обновлении приложения. */
+function migrateDBShape(d){
+  if(!Array.isArray(d.warehouses) || d.warehouses.length===0){
+    d.warehouses = [ { id: DEFAULT_WAREHOUSE_ID, name: 'Основной склад' } ];
+  }
+  const firstWhId = d.warehouses[0].id;
+  (d.lines||[]).forEach(line=>{
+    if(!line.warehouseId) line.warehouseId = firstWhId;
+    (line.rows||[]).forEach(row=>{
+      (row.items||[]).forEach(it=>{
+        if(typeof it.minQty !== 'number') it.minQty = 0;
+        if(typeof it.reserved !== 'number') it.reserved = 0;
+        if(typeof it.category !== 'string') it.category = '';
+      });
+    });
+  });
+  if(!Array.isArray(d.history)) d.history = [];
+  if(!Array.isArray(d.undoStack)) d.undoStack = [];
+  return d;
+}
+
+function loadDB(){
+  let raw = localStorage.getItem(DB_KEY);
+  if(!raw){ const d = defaultDB(); localStorage.setItem(DB_KEY, JSON.stringify(d)); return d; }
+  try{
+    const d = migrateDBShape(JSON.parse(raw));
+    return d;
+  }catch(e){ const d = defaultDB(); localStorage.setItem(DB_KEY, JSON.stringify(d)); return d; }
+}
+function saveDBLocal(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+/* Хэширует пароли всех пользователей, у которых они ещё хранятся открытым
+   текстом (старые записи или самый первый запуск с дефолтным админом). */
+async function migratePlaintextPasswords(db){
+  let changed = false;
+  for(const u of db.users){
+    if(u.password != null && !u.passwordHash){
+      await setUserPassword(u, u.password);
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+function logEvent(type, {sku, lineName, rowName, warehouseName, qty}){
+  const u = currentUser();
+  DB.history.push({
+    id: uid(),
+    type,               // 'in' — приход/новый товар, 'out' — продано
+    sku, lineName, rowName, warehouseName, qty,
+    byLogin: u ? u.login : '',
+    byFio: u ? u.fio : '',
+    at: Date.now()
+  });
+  if(DB.history.length > 5000) DB.history.splice(0, DB.history.length - 5000);
+}
+
+function computeStats(){
+  let totalModels = 0;
+  DB.lines.forEach(l => l.rows.forEach(r => totalModels += r.items.length));
+  let totalIn = 0, totalOut = 0;
+  const byUser = {};
+  DB.history.forEach(ev=>{
+    if(ev.type === 'in'){
+      totalIn += ev.qty;
+      if(!byUser[ev.byLogin]) byUser[ev.byLogin] = { fio: ev.byFio, login: ev.byLogin, qty: 0 };
+      byUser[ev.byLogin].qty += ev.qty;
+    } else if(ev.type === 'out'){
+      totalOut += ev.qty;
+    }
+  });
+  const byUserList = Object.values(byUser).sort((a,b)=> b.qty - a.qty);
+  return { totalModels, totalIn, totalOut, byUserList };
+}
+
+/* Последние 14 дней прихода/продаж — данные для графика в статистике */
+function computeDailySeries(days){
+  const now = new Date();
+  const buckets = [];
+  for(let i=days-1;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate()-i);
+    buckets.push({ key: d.toISOString().slice(0,10), label: d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'}), in:0, out:0 });
+  }
+  const byKey = Object.fromEntries(buckets.map(b=>[b.key,b]));
+  DB.history.forEach(ev=>{
+    const key = new Date(ev.at).toISOString().slice(0,10);
+    const b = byKey[key];
+    if(!b) return;
+    if(ev.type==='in') b.in += ev.qty; else if(ev.type==='out') b.out += ev.qty;
+  });
+  return buckets;
+}
+
+/* Товары с остатком на/ниже установленного минимума (minQty > 0) */
+function computeLowStock(){
+  const res = [];
+  DB.lines.forEach(line=>{
+    line.rows.forEach(row=>{
+      row.items.forEach(it=>{
+        if(it.minQty > 0 && it.qty <= it.minQty){
+          res.push({ line, row, item: it });
+        }
+      });
+    });
+  });
+  return res;
+}
+
+let DB = loadDB();
+let session = localStorage.getItem(SESSION_KEY) || null;
+let currentTab = 'home';
+let openLines = {};
+let openRows = {};
+let toastTimer = null;
+let fbStatus = 'idle';        // idle | syncing | ok | off | error
+let fbLastSync = null;
+let fbSaveTimer = null;
+let fbApplyingRemote = false; // true пока применяем данные, пришедшие из Firebase (чтобы не зациклить сохранение)
+let currentWarehouseId = (DB.warehouses[0] && DB.warehouses[0].id) || DEFAULT_WAREHOUSE_ID;
+let localUndoStack = [];      // локальный (не синхронизируемый) стек для кнопки «Отменить»
+let knownPendingCount = null; // для отслеживания новых регистраций и уведомлений
+
+function currentUser(){ return DB.users.find(u => u.login === session); }
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 1800);
+}
+
+/* Показывает системное уведомление браузера (если открыта вкладка и есть разрешение)
+   администратору/менеджеру, когда появляется новый пользователь, ожидающий доступа.
+   Ограничение: работает только пока приложение открыто в браузере — это не полноценный
+   push через Firebase Cloud Messaging (для него нужен отдельный сервер/Cloud Functions). */
+function checkNewRegistrations(){
+  const u = currentUser();
+  if(!u || (u.role!=='admin' && u.role!=='manager')) return;
+  const pending = DB.users.filter(x=>x.role==='user' && x.access==='none').length;
+  if(knownPendingCount === null){ knownPendingCount = pending; return; }
+  if(pending > knownPendingCount && typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+    new Notification('Склад', { body: 'Новый пользователь ожидает доступа' });
+  }
+  knownPendingCount = pending;
+}
+
+/* ---------- Firebase read/write ---------- */
+async function fbPull(){
+  fbStatus = 'syncing'; updateSyncBar();
+  try{
+    const snap = await fbDb.ref(FB_DATA_PATH).get();
+    if(snap.exists()){
+      const remote = snap.val();
+      if(remote && remote.users && remote.lines){
+        DB = migrateDBShape(remote);
+        saveDBLocal(DB);
+        checkNewRegistrations();
+      }
+    }
+    fbStatus = 'ok'; fbLastSync = new Date();
+    return true;
+  }catch(e){
+    fbStatus = 'error';
+    return false;
+  }finally{
+    updateSyncBar();
+  }
+}
+
+function scheduleFbSave(){
+  clearTimeout(fbSaveTimer);
+  fbSaveTimer = setTimeout(fbPush, 500);
+}
+
+async function fbPush(){
+  fbStatus = 'syncing'; updateSyncBar();
+  try{
+    fbApplyingRemote = true; // это наша собственная запись — не нужно перерисовывать по эху listener'а
+    await fbDb.ref(FB_DATA_PATH).set(DB);
+    fbStatus = 'ok'; fbLastSync = new Date();
+  }catch(e){
+    fbStatus = 'error';
+  }finally{
+    setTimeout(()=>{ fbApplyingRemote = false; }, 300);
+    updateSyncBar();
+  }
+}
+
+// Живая синхронизация: как только кто-то другой меняет данные в Firebase,
+// это устройство сразу получает обновление и перерисовывает экран.
+function startFbListener(){
+  fbDb.ref(FB_DATA_PATH).on('value', (snap)=>{
+    if(fbApplyingRemote) return; // пропускаем эхо собственной записи
+    if(!snap.exists()) return;
+    const remote = snap.val();
+    if(!remote || !remote.users || !remote.lines) return;
+    if(JSON.stringify(remote) === JSON.stringify(DB)) return; // ничего не изменилось
+    DB = migrateDBShape(remote);
+    saveDBLocal(DB);
+    fbStatus = 'ok'; fbLastSync = new Date();
+    checkNewRegistrations();
+    render();
+  }, ()=>{ fbStatus = 'error'; updateSyncBar(); });
+}
+
+/* saveDB сохраняет снимок ПРЕДЫДУЩЕГО состояния в локальный (несинхронизируемый)
+   стек отмены — так кнопка «Отменить последнее действие» работает без раздувания
+   общей базы Firebase историей полных копий данных. */
+function saveDB(db){
+  const prevRaw = localStorage.getItem(DB_KEY);
+  if(prevRaw){
+    localUndoStack.push(prevRaw);
+    if(localUndoStack.length > 10) localUndoStack.shift();
+  }
+  saveDBLocal(db);
+  scheduleFbSave();
+}
+
+function undoLastAction(){
+  if(localUndoStack.length === 0){ toast('Нечего отменять'); return; }
+  const prevRaw = localUndoStack.pop();
+  DB = migrateDBShape(JSON.parse(prevRaw));
+  saveDBLocal(DB);
+  scheduleFbSave();
+  toast('Действие отменено');
+  render();
+}
+
+function updateSyncBar(){
+  const el = document.getElementById('syncBar');
+  if(!el) return;
+  el.outerHTML = renderSyncBar();
+  bindSyncBarEvents();
+}
+
+function renderSyncBar(){
+  let dotClass = 'off', label = 'Подключение к базе...';
+  if(fbStatus==='syncing'){ dotClass='spin'; label='Синхронизация...'; }
+  else if(fbStatus==='ok'){ dotClass=''; label = fbLastSync ? `Синхронизировано · ${fbLastSync.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}` : 'Синхронизировано'; }
+  else if(fbStatus==='error'){ dotClass='off'; label='Ошибка синхронизации'; }
+  return `
+    <div class="sync-bar" id="syncBar">
+      <div style="display:flex;align-items:center;gap:8px;"><span class="dot ${dotClass}"></span>${label}</div>
+      <button class="refresh" id="btnFbRefresh">Обновить</button>
+    </div>
+  `;
+}
+function bindSyncBarEvents(){
+  const b = document.getElementById('btnFbRefresh');
+  if(b) b.onclick = async ()=>{ await fbPull(); render(); toast('Данные обновлены'); };
+}
+
+/* ============================= RENDER ROOT ============================= */
+function render(){
+  const app = document.getElementById('app');
+  if(!session){
+    app.innerHTML = renderAuth();
+    bindAuthEvents();
+  } else {
+    app.innerHTML = renderShell();
+    bindShellEvents();
+  }
+}
+
+/* ============================= AUTH SCREEN ============================= */
+let authTab = 'login';
+let authError = '';
+
+function renderAuth(){
+  return `
+  <div class="auth-wrap">
+    <div class="logo">
+      <div class="box">${NAV_ICONS.box}</div>
+      <h1>Склад</h1>
+      <p>Учёт товаров по линиям и рядам</p>
+    </div>
+
+    <div class="tabs">
+      <button id="tabLogin" class="${authTab==='login'?'active':''}">Вход</button>
+      <button id="tabReg" class="${authTab==='register'?'active':''}">Регистрация</button>
+    </div>
+
+    ${authTab==='login' ? `
+      <div class="field"><label>Логин</label><input id="loginLogin" type="text" autocomplete="username"></div>
+      <div class="field"><label>Пароль</label><input id="loginPass" type="password" autocomplete="current-password"></div>
+      <button class="btn" id="btnDoLogin">Войти</button>
+    ` : `
+      <div class="field"><label>ФИО</label><input id="regFio" type="text" placeholder="Иванов Иван Иванович"></div>
+      <div class="field"><label>Придумайте логин</label><input id="regLogin" type="text"></div>
+      <div class="field"><label>Придумайте пароль</label><input id="regPass" type="password"></div>
+      <button class="btn" id="btnDoReg">Зарегистрироваться</button>
+    `}
+    <div class="err" id="authErr">${authError}</div>
+    <div class="hint">После регистрации доступ к товарам откроет администратор</div>
+  </div>`;
+}
+
+function bindAuthEvents(){
+  document.getElementById('tabLogin').onclick = ()=>{ authTab='login'; authError=''; render(); };
+  document.getElementById('tabReg').onclick = ()=>{ authTab='register'; authError=''; render(); };
+  if(authTab==='login'){ document.getElementById('btnDoLogin').onclick = doLogin; }
+  else { document.getElementById('btnDoReg').onclick = doRegister; }
+}
+
+async function doLogin(){
+  const login = document.getElementById('loginLogin').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  await fbPull(); // подтянуть свежие данные перед проверкой
+  const user = DB.users.find(u => u.login === login);
+  const ok = user ? await checkUserPassword(user, pass) : false;
+  if(!ok){
+    authError = 'Неверный логин или пароль';
+    render();
+    return;
+  }
+  if(user.password != null && !user.passwordHash){
+    await setUserPassword(user, pass); // тихая миграция старого открытого пароля в хэш
+    saveDB(DB);
+  }
+  session = user.login;
+  localStorage.setItem(SESSION_KEY, session);
+  authError = '';
+  knownPendingCount = null; // пересчитать после входа, чтобы не спамить старыми заявками
+  if(typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+    registerPushForCurrentUser(); // если разрешение уже выдано раньше — обновим токен молча
+  }
+  showWelcome(user.fio, false);
+}
+
+async function doRegister(){
+  const fio = document.getElementById('regFio').value.trim();
+  const login = document.getElementById('regLogin').value.trim();
+  const pass = document.getElementById('regPass').value;
+  if(!fio || !login || !pass){ authError = 'Заполните все поля'; render(); return; }
+  await fbPull();
+  if(DB.users.find(u => u.login === login)){ authError = 'Такой логин уже занят'; render(); return; }
+  const user = { login, fio, role:'user', access:'none', telegram:'' };
+  await setUserPassword(user, pass);
+  DB.users.push(user);
+  saveDB(DB);
+  session = login;
+  localStorage.setItem(SESSION_KEY, session);
+  authError = '';
+  showWelcome(fio, true);
+}
+
+function showWelcome(fio, isNew){
+  const overlay = document.createElement('div');
+  overlay.className = 'welcome-overlay';
+  overlay.innerHTML = `
+    <div class="welcome-ring">${isNew ? '🎉' : '👋'}</div>
+    <h2>${isNew ? 'Добро пожаловать' : 'С возвращением'}</h2>
+    <h1>${escapeHtml(fio)}</h1>
+    <div class="dots"><span></span><span></span><span></span></div>
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(()=>{
+    overlay.classList.add('hide');
+    setTimeout(()=>{
+      overlay.remove();
+      currentTab = 'home';
+      render();
+    }, 480);
+  }, 5000);
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.innerText = s == null ? '' : s;
+  return d.innerHTML;
+}
+
+/* ============================= APP SHELL ============================= */
+function roleLabel(u){
+  if(u.role==='admin') return 'АДМИН';
+  if(u.role==='manager') return 'МЕНЕДЖЕР';
+  return u.access==='granted' ? 'ДОСТУП' : 'ОЖИДАНИЕ';
+}
+
+function renderShell(){
+  const u = currentUser();
+  if(!u){ session=null; localStorage.removeItem(SESSION_KEY); return renderAuth(); }
+  checkNewRegistrations();
+
+  let body = '';
+  if(currentTab === 'home') body = renderHome(u);
+  else if(currentTab === 'search') body = renderSearch(u);
+  else if(currentTab === 'history') body = renderHistory(u);
+  else if(currentTab === 'profile') body = renderProfile(u);
+
+  const pendingCount = (u.role==='admin'||u.role==='manager') ? DB.users.filter(x=>x.role==='user' && x.access==='none').length : 0;
+
+  return `
+    <div class="topbar">
+      <div class="who">
+        <b>${escapeHtml(u.fio)}</b>
+        <span>@${escapeHtml(u.login)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="badge">${roleLabel(u)}</span>
+        <button class="logout" id="btnLogout">Выйти</button>
+      </div>
+    </div>
+    <div class="content" id="content">
+      ${currentTab==='home' ? renderSyncBar() : ''}
+      ${body}
+    </div>
+    <div class="toast" id="toast"></div>
+    <div class="bottom-nav">
+      <button data-tab="home" class="${currentTab==='home'?'active':''}"><span class="ic">${NAV_ICONS.home}</span>Главная</button>
+      <button data-tab="search" class="${currentTab==='search'?'active':''}"><span class="ic">${NAV_ICONS.search}</span>Поиск</button>
+      <button data-tab="history" class="${currentTab==='history'?'active':''}"><span class="ic">${NAV_ICONS.history}</span>История</button>
+      <button data-tab="profile" class="${currentTab==='profile'?'active':''}" style="position:relative;">
+        <span class="ic">${NAV_ICONS.profile}</span>Профиль
+        ${pendingCount>0 ? `<span style="position:absolute;top:2px;right:14px;background:var(--danger);color:#fff;font-size:9px;font-weight:800;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;">${pendingCount}</span>` : ''}
+      </button>
+    </div>
+  `;
+}
+
+function bindShellEvents(){
+  document.getElementById('btnLogout').onclick = ()=>{
+    session = null;
+    localStorage.removeItem(SESSION_KEY);
+    render();
+  };
+  document.querySelectorAll('.bottom-nav button').forEach(btn=>{
+    btn.onclick = ()=>{ currentTab = btn.dataset.tab; render(); };
+  });
+  if(currentTab==='home') bindSyncBarEvents();
+  bindTabEvents();
+}
+
+function bindTabEvents(){
+  if(currentTab==='home') bindHomeEvents();
+  else if(currentTab==='search') bindSearchEvents();
+  else if(currentTab==='history') bindHistoryEvents();
+  else if(currentTab==='profile') bindProfileEvents();
+}
+
+/* ============================= HOME (СКЛАД) ============================= */
+function hasAccess(u){ return u.role==='admin' || u.role==='manager' || u.access==='granted'; }
+function canEdit(u){ return u.role==='admin' || u.role==='manager'; }
+
+function renderWarehouseTabs(u){
+  if(!DB.warehouses.find(w=>w.id===currentWarehouseId)) currentWarehouseId = DB.warehouses[0].id;
+  return `
+    <div class="wh-tabs" style="display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;">
+      ${DB.warehouses.map(w=>`
+        <button data-wh="${w.id}" class="wh-tab ${w.id===currentWarehouseId?'active':''}"
+          style="flex:none;padding:7px 12px;border-radius:10px;border:1px solid var(--border);
+          background:${w.id===currentWarehouseId?'var(--accent)':'var(--card)'};
+          color:${w.id===currentWarehouseId?'#fff':'var(--text)'};font-size:12px;font-weight:700;white-space:nowrap;">
+          🏬 ${escapeHtml(w.name)}
+        </button>`).join('')}
+      ${canEdit(u) ? `<button id="btnAddWh" style="flex:none;padding:7px 12px;border-radius:10px;border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:12px;">+ склад</button>` : ''}
+      ${canEdit(u) && DB.warehouses.length>1 ? `<button id="btnRenameWh" style="flex:none;padding:7px 10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;">✎</button>
+      <button id="btnDelWh" style="flex:none;padding:7px 10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--danger);font-size:12px;">✕</button>` : ''}
+    </div>
+  `;
+}
+
+function renderLowStockBanner(u){
+  if(!canEdit(u)) return '';
+  const low = computeLowStock().filter(x=>x.line.warehouseId===currentWarehouseId);
+  if(low.length===0) return '';
+  return `
+    <div class="pending-card" style="background:#3a1f1f;border:1px solid var(--danger);text-align:left;padding:12px 14px;margin-bottom:12px;">
+      <div style="font-weight:800;color:var(--danger);margin-bottom:6px;">⚠️ Низкий остаток (${low.length})</div>
+      ${low.slice(0,6).map(x=>`<div style="font-size:12px;color:var(--text);padding:2px 0;">${escapeHtml(x.item.sku)} — ${x.item.qty} шт. <span style="color:var(--muted)">(${escapeHtml(x.line.name)}/${escapeHtml(x.row.name)})</span></div>`).join('')}
+      ${low.length>6 ? `<div style="font-size:11px;color:var(--muted);margin-top:4px;">и ещё ${low.length-6}...</div>` : ''}
+    </div>
+  `;
+}
+
+function renderHome(u){
+  if(!hasAccess(u)){
+    const admin = DB.users.find(x=>x.role==='admin');
+    const tg = admin && admin.telegram ? admin.telegram.replace('@','') : '';
+    return `
+      <div class="pending-card">
+        <div class="ico">🔒</div>
+        <h3>Требуется разрешение администратора</h3>
+        <p>Ваш аккаунт создан, но доступ к складу пока закрыт.<br>Свяжитесь с администратором, чтобы получить доступ.</p>
+        ${tg ? `<a class="tg-btn" href="https://t.me/${tg}" target="_blank">✈️ Написать в Telegram</a>` : `<p style="font-size:12px">Администратор пока не указал Telegram</p>`}
+      </div>
+    `;
+  }
+
+  let html = renderWarehouseTabs(u) + renderLowStockBanner(u);
+  const linesHere = DB.lines.filter(l=>l.warehouseId===currentWarehouseId);
+
+  linesHere.forEach(line=>{
+    const isOpen = !!openLines[line.id];
+    html += `
+      <div class="line" data-line="${line.id}">
+        <div class="line-head" data-toggle-line="${line.id}">
+          <div class="ttl">📏 <span class="txt">${escapeHtml(line.name)}</span></div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            ${canEdit(u) ? `<button class="del-x" data-del-line="${line.id}">✕</button>` : ''}
+            <span class="chev ${isOpen?'open':''}">›</span>
+          </div>
+        </div>
+        <div class="line-body ${isOpen?'open':''}">
+          ${line.rows.map(row=>renderRow(u, line, row)).join('')}
+          ${canEdit(u) ? `
+            <div class="add-inline">
+              <input type="text" placeholder="Новый ряд..." data-new-row="${line.id}">
+              <button data-add-row="${line.id}">+</button>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  });
+
+  if(canEdit(u)){
+    html += `<button class="add-line-btn" id="btnAddLine">+ Добавить линию</button>`;
+  }
+
+  return html + (linesHere.length ? '' : `<div class="empty-state"><div class="ico">📭</div>Нет данных.${canEdit(u) ? ' Добавьте первую линию.' : ''}</div>`);
+}
+
+function renderRow(u, line, row){
+  const key = line.id+'_'+row.id;
+  const isOpen = !!openRows[key];
+  return `
+    <div class="row" data-row="${row.id}">
+      <div class="row-head" data-toggle-row="${key}">
+        <div class="ttl">📂 <span class="txt">${escapeHtml(row.name)}</span> <span style="color:var(--muted);font-weight:400;flex:none;">(${row.items.length})</span></div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${canEdit(u) ? `<button class="del-x" data-del-row="${line.id}|${row.id}">✕</button>` : ''}
+          <span class="chev ${isOpen?'open':''}">›</span>
+        </div>
+      </div>
+      <div class="row-body ${isOpen?'open':''}">
+        ${row.items.map(it=>renderItem(u, line, row, it)).join('')}
+        ${canEdit(u) ? `
+          <div class="add-inline" style="flex-wrap:wrap;">
+            <input type="text" placeholder="Артикул..." data-new-sku="${line.id}|${row.id}" style="flex:1 1 120px;">
+            <input type="number" min="0" value="0" class="qty" data-new-qty="${line.id}|${row.id}" style="width:64px;">
+            <button type="button" data-scan="${line.id}|${row.id}" title="Сканировать штрихкод" style="flex:none;">📷</button>
+            <button data-add-item="${line.id}|${row.id}">+</button>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderItem(u, line, row, it){
+  const low = it.minQty > 0 && it.qty <= it.minQty;
+  const available = it.qty - (it.reserved||0);
+  return `
+    <div class="item" data-item="${it.id}" style="${low?'border-color:var(--danger);':''}">
+      <div class="info">
+        <div class="sku">${escapeHtml(it.sku)} ${it.category ? `<span style="font-size:10px;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:1px 5px;margin-left:4px;">${escapeHtml(it.category)}</span>` : ''} ${low ? `<span style="font-size:10px;color:var(--danger);">⚠️ мин ${it.minQty}</span>` : ''}</div>
+        <div class="loc">${escapeHtml(line.name)} / ${escapeHtml(row.name)}${it.reserved>0 ? ` · рез: ${it.reserved} · доступно: ${available}` : ''}</div>
+      </div>
+      <div class="qty-ctrl">
+        <button data-qty-dec="${line.id}|${row.id}|${it.id}">−</button>
+        <span class="val">${it.qty}</span>
+        <button data-qty-inc="${line.id}|${row.id}|${it.id}">+</button>
+        ${canEdit(u) ? `<button class="del-x" data-edit-item="${line.id}|${row.id}|${it.id}" title="Категория/минимум/резерв" style="color:var(--muted);">✎</button>` : ''}
+        ${canEdit(u) ? `<button class="del-x" data-del-item="${line.id}|${row.id}|${it.id}">✕</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function bindHomeEvents(){
+  const u = currentUser();
+  if(!hasAccess(u)) return;
+
+  document.querySelectorAll('[data-wh]').forEach(el=>{
+    el.onclick = ()=>{ currentWarehouseId = el.dataset.wh; render(); };
+  });
+  if(canEdit(u)){
+    const btnAddWh = document.getElementById('btnAddWh');
+    if(btnAddWh) btnAddWh.onclick = ()=>{
+      const name = prompt('Название нового склада:');
+      if(name && name.trim()){
+        const w = { id: uid(), name: name.trim() };
+        DB.warehouses.push(w);
+        currentWarehouseId = w.id;
+        saveDB(DB); render();
+      }
+    };
+    const btnRenWh = document.getElementById('btnRenameWh');
+    if(btnRenWh) btnRenWh.onclick = ()=>{
+      const w = DB.warehouses.find(x=>x.id===currentWarehouseId);
+      const name = prompt('Новое название склада:', w.name);
+      if(name && name.trim()){ w.name = name.trim(); saveDB(DB); render(); }
+    };
+    const btnDelWh = document.getElementById('btnDelWh');
+    if(btnDelWh) btnDelWh.onclick = ()=>{
+      if(DB.warehouses.length<=1) return;
+      if(!confirm('Удалить склад вместе со всеми линиями и товарами на нём?')) return;
+      DB.lines = DB.lines.filter(l=>l.warehouseId!==currentWarehouseId);
+      DB.warehouses = DB.warehouses.filter(w=>w.id!==currentWarehouseId);
+      currentWarehouseId = DB.warehouses[0].id;
+      saveDB(DB); render();
+    };
+  }
+
+  document.querySelectorAll('[data-toggle-line]').forEach(el=>{
+    el.onclick = ()=>{ const id = el.dataset.toggleLine; openLines[id] = !openLines[id]; render(); };
+  });
+  document.querySelectorAll('[data-toggle-row]').forEach(el=>{
+    el.onclick = ()=>{ const id = el.dataset.toggleRow; openRows[id] = !openRows[id]; render(); };
+  });
+  document.querySelectorAll('[data-qty-inc]').forEach(el=>{ el.onclick = ()=> changeQty(el.dataset.qtyInc, 1); });
+  document.querySelectorAll('[data-qty-dec]').forEach(el=>{ el.onclick = ()=> changeQty(el.dataset.qtyDec, -1); });
+
+  if(canEdit(u)){
+    const btnAddLine = document.getElementById('btnAddLine');
+    if(btnAddLine) btnAddLine.onclick = ()=>{
+      const name = prompt('Название линии:');
+      if(name && name.trim()){
+        DB.lines.push({ id:uid(), name:name.trim(), warehouseId: currentWarehouseId, rows:[] });
+        saveDB(DB); render();
+      }
+    };
+    document.querySelectorAll('[data-del-line]').forEach(el=>{
+      el.onclick = (e)=>{ e.stopPropagation();
+        if(confirm('Удалить линию и всё её содержимое?')){
+          DB.lines = DB.lines.filter(l=>l.id!==el.dataset.delLine);
+          saveDB(DB); render();
+        }
+      };
+    });
+    document.querySelectorAll('[data-add-row]').forEach(el=>{
+      el.onclick = ()=>{
+        const lineId = el.dataset.addRow;
+        const input = document.querySelector(`[data-new-row="${lineId}"]`);
+        const name = input.value.trim();
+        if(!name) return;
+        const line = DB.lines.find(l=>l.id===lineId);
+        line.rows.push({ id:uid(), name, items:[] });
+        saveDB(DB);
+        openLines[lineId] = true;
+        render();
+      };
+    });
+    document.querySelectorAll('[data-del-row]').forEach(el=>{
+      el.onclick = (e)=>{ e.stopPropagation();
+        const [lineId, rowId] = el.dataset.delRow.split('|');
+        if(confirm('Удалить ряд и его артикулы?')){
+          const line = DB.lines.find(l=>l.id===lineId);
+          line.rows = line.rows.filter(r=>r.id!==rowId);
+          saveDB(DB); render();
+        }
+      };
+    });
+    document.querySelectorAll('[data-scan]').forEach(el=>{
+      el.onclick = ()=>{
+        const [lineId, rowId] = el.dataset.scan.split('|');
+        openBarcodeScanner((code)=>{
+          const input = document.querySelector(`[data-new-sku="${lineId}|${rowId}"]`);
+          if(input){ input.value = code; input.focus(); }
+        });
+      };
+    });
+    document.querySelectorAll('[data-add-item]').forEach(el=>{
+      el.onclick = ()=>{
+        const [lineId, rowId] = el.dataset.addItem.split('|');
+        const skuInput = document.querySelector(`[data-new-sku="${lineId}|${rowId}"]`);
+        const qtyInput = document.querySelector(`[data-new-qty="${lineId}|${rowId}"]`);
+        const sku = skuInput.value.trim();
+        const qty = parseInt(qtyInput.value) || 0;
+        if(!sku) return;
+        const line = DB.lines.find(l=>l.id===lineId);
+        const row = line.rows.find(r=>r.id===rowId);
+        row.items.push({ id:uid(), sku, qty, minQty:0, reserved:0, category:'' });
+        if(qty > 0){
+          const wh = DB.warehouses.find(w=>w.id===line.warehouseId);
+          logEvent('in', { sku, lineName: line.name, rowName: row.name, warehouseName: wh?wh.name:'', qty });
+        }
+        saveDB(DB);
+        openLines[lineId] = true;
+        openRows[lineId+'_'+rowId] = true;
+        render();
+      };
+    });
+    document.querySelectorAll('[data-del-item]').forEach(el=>{
+      el.onclick = ()=>{
+        const [lineId, rowId, itemId] = el.dataset.delItem.split('|');
+        const line = DB.lines.find(l=>l.id===lineId);
+        const row = line.rows.find(r=>r.id===rowId);
+        row.items = row.items.filter(i=>i.id!==itemId);
+        saveDB(DB); render();
+      };
+    });
+    document.querySelectorAll('[data-edit-item]').forEach(el=>{
+      el.onclick = ()=>{
+        const [lineId, rowId, itemId] = el.dataset.editItem.split('|');
+        const line = DB.lines.find(l=>l.id===lineId);
+        const row = line.rows.find(r=>r.id===rowId);
+        const item = row.items.find(i=>i.id===itemId);
+        const category = prompt('Категория (можно оставить пустым):', item.category||'');
+        if(category===null) return;
+        const minQtyStr = prompt('Минимальный остаток для предупреждения (0 — выключено):', String(item.minQty||0));
+        if(minQtyStr===null) return;
+        const reservedStr = prompt('Зарезервировано (не более текущего остатка ' + item.qty + '):', String(item.reserved||0));
+        if(reservedStr===null) return;
+        item.category = category.trim();
+        item.minQty = Math.max(0, parseInt(minQtyStr)||0);
+        item.reserved = Math.min(item.qty, Math.max(0, parseInt(reservedStr)||0));
+        saveDB(DB); render();
+        toast('Товар обновлён');
+      };
+    });
+  }
+}
+
+function changeQty(key, delta){
+  const [lineId, rowId, itemId] = key.split('|');
+  const line = DB.lines.find(l=>l.id===lineId);
+  const row = line.rows.find(r=>r.id===rowId);
+  const item = row.items.find(i=>i.id===itemId);
+  const before = item.qty;
+  item.qty = Math.max(0, item.qty + delta);
+  if(item.reserved > item.qty) item.reserved = item.qty; // резерв не может превышать остаток
+  const actualDelta = item.qty - before; // фактическое изменение (не даём уйти в минус)
+  const wh = DB.warehouses.find(w=>w.id===line.warehouseId);
+  if(actualDelta > 0){
+    logEvent('in', { sku: item.sku, lineName: line.name, rowName: row.name, warehouseName: wh?wh.name:'', qty: actualDelta });
+  } else if(actualDelta < 0){
+    logEvent('out', { sku: item.sku, lineName: line.name, rowName: row.name, warehouseName: wh?wh.name:'', qty: -actualDelta });
+  }
+  saveDB(DB);
+  render();
+}
+
+/* ============================= BARCODE / QR SCANNER =============================
+   Использует нативный BarcodeDetector API (есть в Chrome/Edge/Android).
+   В Safari/iOS API пока не поддерживается — тогда просто показываем сообщение,
+   и товар как обычно можно ввести вручную. */
+function openBarcodeScanner(onResult){
+  if(typeof BarcodeDetector === 'undefined'){
+    alert('Сканер штрихкодов не поддерживается этим браузером. Введите артикул вручную.');
+    return;
+  }
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999;display:flex;flex-direction:column;';
+  modal.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#111;">
+      <b style="color:#fff;">Наведите камеру на штрихкод</b>
+      <button id="btnCloseScan" style="background:none;border:none;color:#fff;font-size:20px;">✕</button>
+    </div>
+    <video id="scanVideo" style="flex:1;width:100%;object-fit:cover;" playsinline autoplay muted></video>
+  `;
+  document.body.appendChild(modal);
+  let stream = null;
+  let stopped = false;
+  const video = modal.querySelector('#scanVideo');
+  const cleanup = ()=>{
+    stopped = true;
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    modal.remove();
+  };
+  modal.querySelector('#btnCloseScan').onclick = cleanup;
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(async (s)=>{
+    stream = s;
+    video.srcObject = s;
+    const detector = new BarcodeDetector();
+    const tick = async ()=>{
+      if(stopped) return;
+      try{
+        const codes = await detector.detect(video);
+        if(codes && codes.length){
+          const value = codes[0].rawValue;
+          cleanup();
+          onResult(value);
+          return;
+        }
+      }catch(e){ /* ignore single-frame errors */ }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }).catch(()=>{
+    alert('Не удалось получить доступ к камере.');
+    cleanup();
+  });
+}
+
+/* ============================= SEARCH ============================= */
+let searchQuery = '';
+let searchCategory = '';
+
+function renderSearch(u){
+  if(!hasAccess(u)){
+    return `<div class="empty-state"><div class="ico">🔒</div>Поиск станет доступен после подтверждения администратора</div>`;
+  }
+  const allCategories = [...new Set(DB.lines.flatMap(l=>l.rows.flatMap(r=>r.items.map(i=>i.category).filter(Boolean))))].sort();
+  const results = [];
+  if(searchQuery.trim().length > 0 || searchCategory){
+    const q = searchQuery.trim().toLowerCase();
+    DB.lines.forEach(line=>{
+      line.rows.forEach(row=>{
+        row.items.forEach(it=>{
+          if(searchCategory && it.category !== searchCategory) return;
+          const matchesText = q==='' || it.sku.toLowerCase().includes(q) || line.name.toLowerCase().includes(q) || row.name.toLowerCase().includes(q);
+          if(matchesText){
+            const wh = DB.warehouses.find(w=>w.id===line.warehouseId);
+            results.push({line, row, item: it, whName: wh?wh.name:''});
+          }
+        });
+      });
+    });
+  }
+
+  return `
+    <div class="search-box">
+      <span>🔍</span>
+      <input id="searchInput" type="text" placeholder="Поиск по артикулу, линии, ряду..." value="${escapeHtml(searchQuery)}">
+    </div>
+    ${allCategories.length ? `
+      <select id="searchCategorySel" style="width:100%;margin-bottom:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;">
+        <option value="">Все категории</option>
+        ${allCategories.map(c=>`<option value="${escapeHtml(c)}" ${c===searchCategory?'selected':''}>${escapeHtml(c)}</option>`).join('')}
+      </select>
+    ` : ''}
+    ${(searchQuery.trim()==='' && !searchCategory) ? `<div class="empty-state"><div class="ico">🔎</div>Начните вводить артикул или выберите категорию</div>` :
+      results.length===0 ? `<div class="empty-state"><div class="ico">🚫</div>Ничего не найдено</div>` :
+      results.map(r=>`
+        <div class="search-result">
+          <div class="info">
+            <div class="sku">${escapeHtml(r.item.sku)}${r.item.category ? ` <span style="font-size:10px;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:6px;padding:1px 5px;">${escapeHtml(r.item.category)}</span>` : ''}</div>
+            <div class="loc">${escapeHtml(r.whName)} · ${escapeHtml(r.line.name)} / ${escapeHtml(r.row.name)}</div>
+          </div>
+          <div class="qty-ctrl">
+            <button data-qty-dec="${r.line.id}|${r.row.id}|${r.item.id}">−</button>
+            <span class="val">${r.item.qty}</span>
+            <button data-qty-inc="${r.line.id}|${r.row.id}|${r.item.id}">+</button>
+          </div>
+        </div>
+      `).join('')
+    }
+  `;
+}
+
+function bindSearchEvents(){
+  const input = document.getElementById('searchInput');
+  if(input){
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+    input.oninput = (e)=>{
+      searchQuery = e.target.value; render();
+      const i2 = document.getElementById('searchInput');
+      i2.focus(); i2.setSelectionRange(searchQuery.length, searchQuery.length);
+    };
+  }
+  const catSel = document.getElementById('searchCategorySel');
+  if(catSel) catSel.onchange = (e)=>{ searchCategory = e.target.value; render(); };
+  document.querySelectorAll('[data-qty-inc]').forEach(el=>{ el.onclick = ()=> changeQty(el.dataset.qtyInc, 1); });
+  document.querySelectorAll('[data-qty-dec]').forEach(el=>{ el.onclick = ()=> changeQty(el.dataset.qtyDec, -1); });
+}
+
+/* ============================= ЭКСПОРТ CSV ============================= */
+function downloadCsv(filename, rows){
+  const csv = rows.map(r=> r.map(cell=>{
+    const s = String(cell==null?'':cell);
+    return /[;"\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  }).join(';')).join('\r\n');
+  const blob = new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function exportStockCsv(){
+  const rows = [['Склад','Линия','Ряд','Артикул','Категория','Остаток','Минимум','Резерв','Доступно']];
+  DB.lines.forEach(line=>{
+    const wh = DB.warehouses.find(w=>w.id===line.warehouseId);
+    line.rows.forEach(row=>{
+      row.items.forEach(it=>{
+        rows.push([wh?wh.name:'', line.name, row.name, it.sku, it.category||'', it.qty, it.minQty||0, it.reserved||0, it.qty-(it.reserved||0)]);
+      });
+    });
+  });
+  downloadCsv('sklad_ostatki.csv', rows);
+}
+
+function exportHistoryCsv(list){
+  const rows = [['Дата','Время','Тип','Артикул','Склад','Линия','Ряд','Количество','Пользователь','Логин']];
+  list.forEach(ev=>{
+    const d = new Date(ev.at);
+    rows.push([
+      d.toLocaleDateString('ru-RU'), d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}),
+      ev.type==='in'?'Приход':'Списание', ev.sku, ev.warehouseName||'', ev.lineName, ev.rowName, ev.qty, ev.byFio, ev.byLogin
+    ]);
+  });
+  downloadCsv('sklad_istoria.csv', rows);
+}
+
+/* ============================= ИСТОРИЯ ============================= */
+let histFilterFrom = '';
+let histFilterTo = '';
+let histFilterUser = '';
+let histFilterQuery = '';
+
+function renderHistory(u){
+  if(!hasAccess(u)){
+    return `<div class="empty-state"><div class="ico">🔒</div>История станет доступна после подтверждения администратора</div>`;
+  }
+  const users = [...new Map(DB.history.map(ev=>[ev.byLogin, ev.byFio])).entries()];
+
+  let list = DB.history.slice().reverse();
+  if(histFilterFrom){ const t = new Date(histFilterFrom+'T00:00:00').getTime(); list = list.filter(ev=>ev.at >= t); }
+  if(histFilterTo){ const t = new Date(histFilterTo+'T23:59:59').getTime(); list = list.filter(ev=>ev.at <= t); }
+  if(histFilterUser){ list = list.filter(ev=>ev.byLogin === histFilterUser); }
+  if(histFilterQuery.trim()){ const q = histFilterQuery.trim().toLowerCase(); list = list.filter(ev=> (ev.sku||'').toLowerCase().includes(q)); }
+
+  return `
+    <div class="profile-card" style="margin-bottom:12px;">
+      <div class="field"><label>Артикул содержит</label><input id="histQ" type="text" value="${escapeHtml(histFilterQuery)}" placeholder="Например: ABC-123"></div>
+      <div style="display:flex;gap:8px;">
+        <div class="field" style="flex:1;"><label>С даты</label><input id="histFrom" type="date" value="${histFilterFrom}"></div>
+        <div class="field" style="flex:1;"><label>По дату</label><input id="histTo" type="date" value="${histFilterTo}"></div>
+      </div>
+      ${users.length ? `
+        <div class="field"><label>Пользователь</label>
+          <select id="histUser" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;">
+            <option value="">Все пользователи</option>
+            ${users.map(([login,fio])=>`<option value="${escapeHtml(login)}" ${login===histFilterUser?'selected':''}>${escapeHtml(fio||login)}</option>`).join('')}
+          </select>
+        </div>
+      ` : ''}
+      <button class="btn secondary" id="btnExportHist" style="margin-top:4px;">⬇️ Экспорт в CSV (${list.length})</button>
+    </div>
+    ${list.length===0 ? `<div class="empty-state"><div class="ico">📜</div>Событий не найдено</div>` :
+      list.slice(0,300).map(ev=>`
+        <div class="search-result">
+          <div class="info">
+            <div class="sku">${ev.type==='in' ? '📥' : '📤'} ${escapeHtml(ev.sku)} <span style="color:${ev.type==='in'?'var(--accent)':'var(--danger)'};font-weight:800;">${ev.type==='in'?'+':'-'}${ev.qty}</span></div>
+            <div class="loc">${escapeHtml(ev.warehouseName||'')} ${ev.lineName?'· '+escapeHtml(ev.lineName):''}${ev.rowName?'/'+escapeHtml(ev.rowName):''} · ${escapeHtml(ev.byFio||ev.byLogin||'')}</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);text-align:right;flex:none;">
+            ${new Date(ev.at).toLocaleDateString('ru-RU')}<br>${new Date(ev.at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}
+          </div>
+        </div>
+      `).join('')
+    }
+    ${list.length>300 ? `<div class="empty-state" style="padding:10px;"><div style="font-size:11px;">Показаны последние 300 из ${list.length} — уточните фильтр или экспортируйте в CSV</div></div>` : ''}
+  `;
+}
+
+function bindHistoryEvents(){
+  const qEl = document.getElementById('histQ');
+  if(qEl) qEl.oninput = (e)=>{ histFilterQuery = e.target.value; render(); };
+  const fromEl = document.getElementById('histFrom');
+  if(fromEl) fromEl.onchange = (e)=>{ histFilterFrom = e.target.value; render(); };
+  const toEl = document.getElementById('histTo');
+  if(toEl) toEl.onchange = (e)=>{ histFilterTo = e.target.value; render(); };
+  const userEl = document.getElementById('histUser');
+  if(userEl) userEl.onchange = (e)=>{ histFilterUser = e.target.value; render(); };
+  const btnExport = document.getElementById('btnExportHist');
+  if(btnExport) btnExport.onclick = ()=>{
+    let list = DB.history.slice().reverse();
+    if(histFilterFrom){ const t = new Date(histFilterFrom+'T00:00:00').getTime(); list = list.filter(ev=>ev.at >= t); }
+    if(histFilterTo){ const t = new Date(histFilterTo+'T23:59:59').getTime(); list = list.filter(ev=>ev.at <= t); }
+    if(histFilterUser){ list = list.filter(ev=>ev.byLogin === histFilterUser); }
+    if(histFilterQuery.trim()){ const q = histFilterQuery.trim().toLowerCase(); list = list.filter(ev=> (ev.sku||'').toLowerCase().includes(q)); }
+    exportHistoryCsv(list);
+  };
+}
+
+/* ============================= PROFILE ============================= */
+function renderProfile(u){
+  const initials = u.fio.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+  const roleText = u.role==='admin' ? 'Администратор' : (u.role==='manager' ? 'Менеджер' : 'Пользователь');
+
+  let html = `
+    <div class="profile-card">
+      <div class="profile-avatar">${initials}</div>
+      <h3>${escapeHtml(u.fio)}</h3>
+      <div class="sub">Логин: @${escapeHtml(u.login)}</div>
+      <div class="sub">Роль: ${roleText} · ${hasAccess(u)?'доступ открыт':'ожидает доступа'}</div>
+    </div>
+
+    <div class="section-title">Изменить данные</div>
+    <div class="profile-card">
+      <div class="field"><label>Новый логин</label><input id="editLogin" type="text" value="${escapeHtml(u.login)}"></div>
+      <div class="field"><label>Новый пароль</label><input id="editPass" type="password" placeholder="Оставьте пустым, чтобы не менять"></div>
+      <button class="btn" id="btnSaveProfile">Сохранить</button>
+      <div class="err" id="profileErr"></div>
+    </div>
+  `;
+
+  if(hasAccess(u)){
+    const stats = computeStats();
+    const series = computeDailySeries(14);
+    const maxVal = Math.max(1, ...series.map(d=>Math.max(d.in, d.out)));
+    html += `
+      <div class="section-title">Статистика склада</div>
+      <div class="stat-grid">
+        <div class="stat-tile">
+          <div class="stat-num">${stats.totalModels}</div>
+          <div class="stat-label">Моделей на складе</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-num" style="color:var(--accent2)">${stats.totalIn}</div>
+          <div class="stat-label">Новых поступило</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-num" style="color:var(--danger)">${stats.totalOut}</div>
+          <div class="stat-label">Продано</div>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Приход/списание за 14 дней</div>
+        <div style="display:flex;align-items:flex-end;gap:3px;height:90px;">
+          ${series.map(d=>`
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:1px;" title="${d.label}: +${d.in} / -${d.out}">
+              <div style="width:100%;display:flex;gap:1px;align-items:flex-end;height:100%;">
+                <div style="flex:1;background:var(--accent2);border-radius:2px 2px 0 0;height:${Math.round((d.in/maxVal)*100)}%;min-height:${d.in>0?'2px':'0'};"></div>
+                <div style="flex:1;background:var(--danger);border-radius:2px 2px 0 0;height:${Math.round((d.out/maxVal)*100)}%;min-height:${d.out>0?'2px':'0'};"></div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:4px;">
+          <span>${series[0].label}</span><span>${series[series.length-1].label}</span>
+        </div>
+        <div style="display:flex;gap:14px;margin-top:8px;font-size:11px;color:var(--muted);">
+          <span><span style="display:inline-block;width:8px;height:8px;background:var(--accent2);border-radius:2px;margin-right:4px;"></span>Приход</span>
+          <span><span style="display:inline-block;width:8px;height:8px;background:var(--danger);border-radius:2px;margin-right:4px;"></span>Списание</span>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <button class="btn secondary" id="btnExportStock" style="margin-bottom:8px;">⬇️ Экспорт остатков (CSV)</button>
+        ${canEdit(u) ? `<button class="btn secondary" id="btnEnableNotif" style="margin-bottom:8px;">🔔 Включить push-уведомления</button>` : ''}
+        ${canEdit(u) ? `<button class="btn secondary" id="btnUndo">↩️ Отменить последнее действие</button>` : ''}
+      </div>
+    `;
+  }
+
+  if(u.role==='admin'){
+    html += `
+      <div class="section-title">Telegram для связи с пользователями</div>
+      <div class="profile-card">
+        <div class="field"><label>Ваш Telegram (username без @)</label><input id="editTg" type="text" value="${escapeHtml(u.telegram||'')}" placeholder="username"></div>
+        <button class="btn secondary" id="btnSaveTg">Сохранить Telegram</button>
+      </div>
+
+      <div class="section-title">Синхронизация с Firebase</div>
+      <div class="profile-card">
+        <div class="err" style="color:var(--muted);margin-bottom:6px;">
+          Проект: <b style="color:var(--text)">${firebaseConfig.projectId}</b>
+        </div>
+        <p style="font-size:12px;color:var(--muted);line-height:1.6;margin:0;">
+          Данные склада хранятся в общей базе Firebase Realtime Database и
+          автоматически обновляются на всех устройствах в реальном времени —
+          отдельный токен для записи не нужен. Доступ к записи/чтению базы
+          регулируется правилами безопасности (Rules) в консоли Firebase —
+          рекомендуем ограничить их, чтобы посторонние не могли менять данные.
+          Пароли пользователей хранятся не в открытом виде, а как соль + SHA-256 хэш.
+        </p>
+      </div>
+
+      <div class="section-title">Пользователи (${DB.users.filter(x=>x.role!=='admin').length})</div>
+      ${DB.users.filter(x=>x.role!=='admin').map(x=>`
+        <div class="user-row">
+          <div class="info">
+            <b>${escapeHtml(x.fio)}</b>
+            <span>@${escapeHtml(x.login)}${x.role==='manager' ? ' · менеджер' : ''}</span>
+          </div>
+          <select class="access-sel" data-access-user="${x.login}">
+            <option value="none" ${(x.access==='none'&&x.role!=='manager')?'selected':''}>Нет доступа</option>
+            <option value="granted" ${(x.access==='granted'&&x.role!=='manager')?'selected':''}>Доступ открыт</option>
+            <option value="manager" ${x.role==='manager'?'selected':''}>Менеджер</option>
+          </select>
+        </div>
+      `).join('') || `<div class="empty-state" style="padding:30px 0"><div class="ico">👥</div>Пока никто не зарегистрировался</div>`}
+
+      <div class="section-title">Кто добавил новые товары</div>
+      ${(function(){
+        const stats = computeStats();
+        if(stats.byUserList.length === 0){
+          return `<div class="empty-state" style="padding:24px 0"><div class="ico">📦</div>Пока никто не пополнял склад</div>`;
+        }
+        return stats.byUserList.map(x=>`
+          <div class="user-row">
+            <div class="info">
+              <b>${escapeHtml(x.fio || x.login)}</b>
+              <span>@${escapeHtml(x.login)}</span>
+            </div>
+            <span class="badge" style="color:var(--accent2)">+${x.qty}</span>
+          </div>
+        `).join('');
+      })()}
+    `;
+  }
+
+  return html;
+}
+
+function bindProfileEvents(){
+  const u = currentUser();
+
+  document.getElementById('btnSaveProfile').onclick = async ()=>{
+    const newLogin = document.getElementById('editLogin').value.trim();
+    const newPass = document.getElementById('editPass').value;
+    const errEl = document.getElementById('profileErr');
+    if(!newLogin){ errEl.textContent = 'Логин не может быть пустым'; return; }
+    if(newLogin !== u.login && DB.users.find(x=>x.login===newLogin)){
+      errEl.textContent = 'Такой логин уже занят';
+      return;
+    }
+    u.login = newLogin;
+    if(newPass) await setUserPassword(u, newPass);
+    saveDB(DB);
+    session = newLogin;
+    localStorage.setItem(SESSION_KEY, session);
+    errEl.textContent = '';
+    toast('Данные сохранены');
+    render();
+  };
+
+  if(hasAccess(u)){
+    const btnExportStock = document.getElementById('btnExportStock');
+    if(btnExportStock) btnExportStock.onclick = exportStockCsv;
+
+    const btnNotif = document.getElementById('btnEnableNotif');
+    if(btnNotif) btnNotif.onclick = async ()=>{
+      if(!VAPID_KEY){
+        toast('Backend ещё не настроен разработчиком (нет VAPID-ключа)');
+        return;
+      }
+      const ok = await registerPushForCurrentUser();
+      toast(ok ? 'Push-уведомления включены на этом устройстве' : 'Не удалось включить (проверьте разрешение браузера)');
+    };
+
+    const btnUndo = document.getElementById('btnUndo');
+    if(btnUndo) btnUndo.onclick = ()=>{ undoLastAction(); };
+  }
+
+  if(u.role==='admin'){
+    const btnTg = document.getElementById('btnSaveTg');
+    if(btnTg) btnTg.onclick = ()=>{
+      const tg = document.getElementById('editTg').value.trim();
+      u.telegram = tg;
+      saveDB(DB);
+      toast('Telegram сохранён');
+    };
+
+    document.querySelectorAll('[data-access-user]').forEach(sel=>{
+      sel.onchange = ()=>{
+        const login = sel.dataset.accessUser;
+        const target = DB.users.find(x=>x.login===login);
+        if(sel.value === 'manager'){
+          target.role = 'manager';
+          target.access = 'granted';
+        } else {
+          target.role = 'user';
+          target.access = sel.value;
+        }
+        saveDB(DB);
+        toast(`Права для ${target.fio} обновлены`);
+        render();
+      };
+    });
+  }
+}
+
+/* ============================= INIT ============================= */
+(async function init(){
+  render();
+  await fbPull();
+  await migratePlaintextPasswords(DB);
+  saveDBLocal(DB);
+  render();
+  startFbListener(); // дальше данные будут обновляться в реальном времени сами
+  if(session && typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+    registerPushForCurrentUser();
+  }
+})();
+</script>
+</body>
+</html>

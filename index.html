@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>Склад</title>
+<link id="faviconLink" rel="icon" type="image/svg+xml" href="">
+<link id="appleIconLink" rel="apple-touch-icon" href="">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Склад">
+<link id="manifestLink" rel="manifest" href="">
+<style>
+  :root{
+    --bg:#0d0f14;
+    --bg2:#141822;
+    --card:#1a1f2b;
+    --card2:#212736;
+    --accent:#5b8dff;
+    --accent2:#3ddc97;
+    --accent-grad: linear-gradient(135deg,#5b8dff,#3ddc97);
+    --danger:#ff5c6c;
+    --danger-grad: linear-gradient(135deg,#ff6b6b,#ff3d5f);
+    --text:#f1f3f9;
+    --muted:#8b93a7;
+    --border:#262c3b;
+    --radius:16px;
+    --radius-sm:11px;
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --fs-base: clamp(14px, 3.6vw, 16px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    font-size:var(--fs-base);
+    overscroll-behavior-y:none;}
+  #app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:560px;margin:0 auto;position:relative;overflow:hidden;background:var(--bg);}
+
+  button{font-family:inherit;}
+  button:focus-visible, input:focus-visible, select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  /* ---------- BUTTON SYSTEM (MODERN) ---------- */
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;padding:clamp(12px,3.4vw,15px);
+    border:none;border-radius:var(--radius-sm);
+    background:var(--accent-grad);
+    color:#06110b;
+    font-size:clamp(14px,3.7vw,16px);font-weight:700;
+    cursor:pointer;
+    box-shadow:0 6px 18px -6px rgba(91,141,255,.55);
+    transition:transform .12s ease, box-shadow .12s ease, opacity .12s;
+    -webkit-user-select:none;user-select:none;
+  }
+  .btn:active{transform:scale(.97);box-shadow:0 3px 10px -4px rgba(91,141,255,.5);}
+  .btn.secondary{background:var(--card2);color:var(--text);box-shadow:none;border:1px solid var(--border);}
+  .btn.ghost{background:transparent;color:var(--text);border:1.5px solid var(--border);box-shadow:none;}
+  .btn.danger{background:var(--danger-grad);color:#fff;box-shadow:0 6px 18px -6px rgba(255,92,108,.5);}
+  .btn.sm{padding:9px 12px;font-size:12.5px;width:auto;border-radius:10px;}
+  .btn:disabled{opacity:.5;pointer-events:none;}
+
+  .icon-btn{
+    width:36px;height:36px;min-width:36px;border-radius:11px;border:1px solid var(--border);
+    background:var(--card2);color:var(--text);display:flex;align-items:center;justify-content:center;
+    font-size:16px;cursor:pointer;transition:.15s;
+  }
+  .icon-btn:active{transform:scale(.92);background:var(--card);}
+  .icon-btn.danger-hover:active{background:rgba(255,92,108,.15);color:var(--danger);}
+
+  /* ---------- AUTH ---------- */
+  .auth-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;padding:clamp(20px,6vw,32px);overflow-y:auto;}
+  .logo{text-align:center;margin-bottom:clamp(18px,5vw,26px);}
+  .logo .box{width:clamp(56px,16vw,72px);height:clamp(56px,16vw,72px);border-radius:22px;background:var(--accent-grad);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 10px 30px -8px rgba(91,141,255,.55);color:#fff;}
+  .logo .box svg{width:52%;height:52%;}
+  .logo h1{font-size:clamp(20px,5.5vw,24px);margin:0;letter-spacing:.3px;font-weight:800;}
+  .logo p{color:var(--muted);font-size:12.5px;margin:5px 0 0;}
+
+  .tabs{display:flex;background:var(--card);border-radius:14px;padding:4px;margin-bottom:clamp(16px,5vw,22px);}
+  .tabs button{flex:1;border:none;background:transparent;color:var(--muted);padding:11px;border-radius:11px;font-size:13.5px;font-weight:700;cursor:pointer;transition:.2s;}
+  .tabs button.active{background:var(--accent-grad);color:#06110b;box-shadow:0 4px 14px -4px rgba(91,141,255,.5);}
+
+  .field{margin-bottom:13px;}
+  .field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:.2px;}
+  .field input, .field select{width:100%;padding:13px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:16px;outline:none;transition:.15s;}
+  .field input:focus{border-color:var(--accent);background:var(--card2);}
+
+  .err{color:var(--danger);font-size:12.5px;margin-top:8px;min-height:16px;font-weight:600;}
+  .hint{color:var(--muted);font-size:11.5px;margin-top:16px;text-align:center;line-height:1.6;}
+
+  /* ---------- WELCOME ANIMATION ---------- */
+  .welcome-overlay{position:fixed;inset:0;background:radial-gradient(circle at 50% 28%,#1c2436,#0a0c11 78%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;animation:fadeIn .4s ease;padding:20px;text-align:center;}
+  .welcome-overlay.hide{animation:fadeOut .5s ease forwards;}
+  .welcome-ring{width:clamp(74px,20vw,94px);height:clamp(74px,20vw,94px);border-radius:50%;background:var(--accent-grad);display:flex;align-items:center;justify-content:center;font-size:clamp(32px,10vw,42px);animation:pop .6s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 60px rgba(91,141,255,.5);}
+  .welcome-overlay h2{margin:22px 0 6px;font-size:clamp(16px,4.6vw,20px);color:var(--muted);font-weight:600;animation:slideUp .5s ease .1s both;}
+  .welcome-overlay h1{margin:0;font-size:clamp(22px,6.5vw,29px);background:linear-gradient(135deg,#fff,#9db6ff);-webkit-background-clip:text;background-clip:text;color:transparent;animation:slideUp .5s ease .2s both;font-weight:800;}
+  .welcome-overlay .dots{display:flex;gap:6px;margin-top:26px;}
+  .welcome-overlay .dots span{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 1.2s infinite ease-in-out;}
+  .welcome-overlay .dots span:nth-child(2){animation-delay:.2s;}
+  .welcome-overlay .dots span:nth-child(3){animation-delay:.4s;}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes fadeOut{from{opacity:1}to{opacity:0}}
+  @keyframes pop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- APP SHELL ---------- */
+  .topbar{padding:calc(14px + var(--safe-t)) 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--bg2);gap:10px;}
+  .topbar .who{display:flex;flex-direction:column;min-width:0;}
+  .topbar .who b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw;}
+  .topbar .who span{font-size:11.5px;color:var(--muted);}
+  .badge{font-size:9.5px;padding:4px 9px;border-radius:20px;background:var(--card2);color:var(--accent2);font-weight:800;letter-spacing:.3px;white-space:nowrap;border:1px solid var(--border);}
+  .logout{background:none;border:none;color:var(--muted);font-size:11.5px;cursor:pointer;font-weight:600;}
+
+  .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px clamp(12px,4vw,18px);padding-bottom:calc(96px + var(--safe-b));}
+
+  .empty-state{text-align:center;padding:60px 20px;color:var(--muted);font-size:13.5px;}
+  .empty-state .ico{font-size:40px;margin-bottom:12px;}
+
+  .sync-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:9px 12px;margin-bottom:14px;font-size:11.5px;color:var(--muted);}
+  .sync-bar .dot{width:7px;height:7px;border-radius:50%;background:var(--accent2);flex:none;}
+  .sync-bar .dot.off{background:var(--muted);}
+  .sync-bar .dot.spin{border:2px solid rgba(91,141,255,.3);border-top-color:var(--accent);background:none;width:11px;height:11px;animation:spin .8s linear infinite;}
+  .sync-bar .refresh{background:none;border:none;color:var(--accent);font-weight:700;font-size:11.5px;cursor:pointer;}
+
+  /* pending access block */
+  .pending-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(22px,7vw,30px) clamp(18px,6vw,24px);text-align:center;margin-top:clamp(24px,10vw,44px);}
+  .pending-card .ico{font-size:40px;margin-bottom:10px;}
+  .pending-card h3{margin:0 0 8px;font-size:16px;}
+  .pending-card p{color:var(--muted);font-size:12.5px;line-height:1.6;margin:0 0 18px;}
+  .tg-btn{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#2AABEE,#229ED9);color:#fff;padding:12px 22px;border-radius:13px;text-decoration:none;font-weight:700;font-size:13.5px;box-shadow:0 6px 18px -6px rgba(34,158,217,.6);}
+
+  /* structure: lines/rows/items */
+  .line{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+  .line-head{display:flex;align-items:center;justify-content:space-between;padding:14px 15px;cursor:pointer;gap:8px;}
+  .line-head .ttl{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14.5px;min-width:0;}
+  .line-head .ttl .txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .line-head .chev{transition:.2s;color:var(--muted);flex:none;}
+  .line-head .chev.open{transform:rotate(90deg);}
+  .line-body{display:none;padding:0 11px 12px;}
+  .line-body.open{display:block;animation:slideUp .25s ease;}
+  .row{background:var(--card2);border-radius:13px;margin-bottom:8px;overflow:hidden;}
+  .row-head{display:flex;align-items:center;justify-content:space-between;padding:11px 12px;cursor:pointer;gap:8px;}
+  .row-head .ttl{font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:8px;min-width:0;}
+  .row-head .ttl .txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .row-body{display:none;padding:0 9px 10px;}
+  .row-body.open{display:block;}
+
+  .item{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:12px;padding:10px 11px;margin-top:7px;gap:8px;}
+  .item .info{display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+  .item .sku{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .item .loc{font-size:10.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .qty-ctrl{display:flex;align-items:center;gap:7px;flex:none;}
+  .qty-ctrl button{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.12s;}
+  .qty-ctrl button:active{transform:scale(.9);background:var(--card2);}
+  .qty-ctrl .val{min-width:26px;text-align:center;font-weight:800;font-size:13.5px;}
+  .del-x{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:5px 6px;border-radius:8px;transition:.12s;}
+  .del-x:active{background:rgba(255,92,108,.15);color:var(--danger);}
+
+  .add-inline{display:flex;gap:7px;margin-top:9px;}
+  .add-inline input{flex:1;min-width:0;padding:10px 11px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text);font-size:16px;}
+  .add-inline input.qty{max-width:58px;flex:none;}
+  .add-inline button{background:var(--accent-grad);border:none;color:#06110b;border-radius:10px;padding:0 15px;font-weight:800;cursor:pointer;font-size:15px;flex:none;}
+  .add-inline button:active{transform:scale(.94);}
+
+  .add-line-btn{width:100%;padding:14px;border-radius:var(--radius);border:1.5px dashed var(--border);background:transparent;color:var(--accent);font-weight:700;font-size:13.5px;cursor:pointer;margin-top:4px;transition:.15s;}
+  .add-line-btn:active{background:var(--card);}
+
+  /* search */
+  .search-box{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;}
+  .search-box input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text);font-size:16px;}
+  .search-result{background:var(--card);border-radius:13px;padding:12px 13px;margin-bottom:9px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .search-result .info{min-width:0;}
+  .search-result .info .sku{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .search-result .info .loc{font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* profile */
+  .profile-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:clamp(16px,5vw,20px);margin-bottom:14px;}
+  .profile-avatar{width:52px;height:52px;border-radius:16px;background:var(--accent-grad);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;color:#06110b;margin-bottom:12px;}
+  .profile-card h3{margin:0 0 3px;font-size:16px;}
+  .profile-card .sub{color:var(--muted);font-size:12.5px;margin-bottom:2px;}
+  .section-title{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:22px 0 10px;font-weight:800;}
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+  .stat-tile{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 8px;text-align:center;}
+  .stat-num{font-size:clamp(18px,5.5vw,22px);font-weight:800;color:var(--text);}
+  .stat-label{font-size:10.5px;color:var(--muted);margin-top:4px;line-height:1.35;}
+  .user-row{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:11px 13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .user-row .info{min-width:0;}
+  .user-row .info b{font-size:13.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .user-row .info span{font-size:11px;color:var(--muted);}
+  select.access-sel{background:var(--card2);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:8px 9px;font-size:11.5px;font-weight:700;flex:none;}
+
+  /* bottom nav */
+  .bottom-nav{position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(20,24,34,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--border);padding:8px 10px calc(8px + var(--safe-b));max-width:560px;margin:0 auto;}
+  .bottom-nav button{flex:1;background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;padding:6px;cursor:pointer;border-radius:13px;transition:.15s;}
+  .bottom-nav button.active{color:var(--accent);background:rgba(91,141,255,.12);}
+  .bottom-nav button .ic{width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
+  .bottom-nav button .ic svg{width:22px;height:22px;transition:.15s;}
+  .bottom-nav button.active .ic svg{filter:drop-shadow(0 0 6px rgba(91,141,255,.5));}
+  .bottom-nav button:active{transform:scale(.94);}
+
+  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border);color:var(--text);padding:11px 18px;border-radius:13px;font-size:12.5px;z-index:1000;opacity:0;transition:.25s;pointer-events:none;box-shadow:0 10px 30px -8px rgba(0,0,0,.5);max-width:88%;text-align:center;}
+  .toast.show{opacity:1;bottom:112px;}
+
+  ::-webkit-scrollbar{width:0;height:0;}
+
+  /* small phones */
+  @media (max-width:360px){
+    .content{padding:12px 10px calc(94px + var(--safe-b));}
+    .topbar{padding:calc(12px + var(--safe-t)) 14px 10px;}
+  }
+  /* larger phones / small tablets */
+  @media (min-width:480px){
+    #app{border-left:1px solid var(--border);border-right:1px solid var(--border);}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Firebase SDK (compat, без сборщиков — обычные script-теги) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+
+<script>
+/* ============================= ICON / MANIFEST (генерируется кодом, без внешних фото) ============================= */
+/* Иконка приложения — это векторная SVG-графика, целиком описанная прямо в JS (строка ниже).
+   Никакие внешние картинки/фотографии не используются: PNG-версии для favicon,
+   иконки на главном экране (iOS) и PWA-манифеста рисуются "на лету" через <canvas>. */
+const APP_ICON_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5b8dff"/>
+      <stop offset="100%" stop-color="#3ddc97"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <circle cx="256" cy="176" r="210" fill="#ffffff" opacity="0.07"/>
+  <g fill="none" stroke="#ffffff" stroke-width="22" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M256 96 L400 168 L400 344 L256 416 L112 344 L112 168 Z"/>
+    <path d="M112 168 L256 240 L400 168"/>
+    <path d="M256 240 L256 416"/>
+  </g>
+</svg>`.trim();
+
+function svgToPngDataUrl(svgString, size){
+  return new Promise((resolve)=>{
+    const svgUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+    const img = new Image();
+    img.onload = function(){
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, size, size);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = function(){ resolve(null); };
+    img.src = svgUrl;
+  });
+}
+
+async function setupIcons(){
+  const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(APP_ICON_SVG);
+  document.getElementById('faviconLink').href = svgDataUrl;
+
+  const png180 = await svgToPngDataUrl(APP_ICON_SVG, 180);
+  if(png180) document.getElementById('appleIconLink').href = png180;
+
+  const png192 = await svgToPngDataUrl(APP_ICON_SVG, 192);
+  const png512 = await svgToPngDataUrl(APP_ICON_SVG, 512);
+
+  const manifest = {
+    name: "Склад",
+    short_name: "Склад",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#0d0f14",
+    theme_color: "#0d0f14",
+    icons: [
+      png192 ? { src: png192, sizes: "192x192", type: "image/png" } : null,
+      png512 ? { src: png512, sizes: "512x512", type: "image/png" } : null
+    ].filter(Boolean)
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  document.getElementById('manifestLink').href = URL.createObjectURL(blob);
+}
+setupIcons();
+
+/* ---- Иконки нижней навигации и логотипа — тоже инлайн-SVG, без эмодзи и файлов ---- */
+const NAV_ICONS = {
+  home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H10v-6h4v6h3.5a1 1 0 0 0 1-1v-9"/></svg>`,
+  search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>`,
+  profile: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.2" r="3.7"/><path d="M4.5 20c0-4 3.5-6.2 7.5-6.2s7.5 2.2 7.5 6.2"/></svg>`,
+  box: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 20.5 7.5v9L12 21 3.5 16.5v-9Z"/><path d="M3.5 7.5 12 12l8.5-4.5"/><path d="M12 12v9"/></svg>`
+};
+
+/* ============================= FIREBASE SYNC CONFIG =============================
+   Данные склада хранятся в общей базе Firebase Realtime Database, поэтому
+   они одинаковы на всех устройствах и обновляются в реальном времени —
+   без токенов и ручного обновления.
+================================================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyD9EQvSzWKTD43QZuMDAcwOzwmFAyj85Ks",
+  authDomain: "sklad-19c1d.firebaseapp.com",
+  databaseURL: "https://sklad-19c1d-default-rtdb.firebaseio.com",
+  projectId: "sklad-19c1d",
+  storageBucket: "sklad-19c1d.firebasestorage.app",
+  messagingSenderId: "1036005110988",
+  appId: "1:1036005110988:web:be70638124e87380fdbe69",
+  measurementId: "G-690T46LNV7"
+};
+const fbApp = firebase.initializeApp(firebaseConfig);
+const fbDb = firebase.database();
+const FB_DATA_PATH = 'sklad_db'; // путь к общему объекту данных в Realtime Database
+
+/* ============================= DATA LAYER ============================= */
+const DB_KEY = 'sklad_db_v1';
+const SESSION_KEY = 'sklad_session_v1';
+
+function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+
+function defaultDB(){
+  return {
+    users: [
+      { login:'admin', password:'2005', fio:'Администратор', role:'admin', access:'granted', telegram:'' }
+    ],
+    lines: [],
+    history: [] // журнал: приход/продажа товара, кто и когда
+  };
+}
+
+function loadDB(){
+  let raw = localStorage.getItem(DB_KEY);
+  if(!raw){ const d = defaultDB(); localStorage.setItem(DB_KEY, JSON.stringify(d)); return d; }
+  try{
+    const d = JSON.parse(raw);
+    if(!Array.isArray(d.history)) d.history = []; // миграция старых данных без истории
+    return d;
+  }catch(e){ const d = defaultDB(); localStorage.setItem(DB_KEY, JSON.stringify(d)); return d; }
+}
+function saveDBLocal(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+function logEvent(type, {sku, lineName, rowName, qty}){
+  const u = currentUser();
+  DB.history.push({
+    id: uid(),
+    type,               // 'in' — приход/новый товар, 'out' — продано
+    sku, lineName, rowName, qty,
+    byLogin: u ? u.login : '',
+    byFio: u ? u.fio : '',
+    at: Date.now()
+  });
+  if(DB.history.length > 5000) DB.history.splice(0, DB.history.length - 5000);
+}
+
+function computeStats(){
+  let totalModels = 0;
+  DB.lines.forEach(l => l.rows.forEach(r => totalModels += r.items.length));
+  let totalIn = 0, totalOut = 0;
+  const byUser = {};
+  DB.history.forEach(ev=>{
+    if(ev.type === 'in'){
+      totalIn += ev.qty;
+      if(!byUser[ev.byLogin]) byUser[ev.byLogin] = { fio: ev.byFio, login: ev.byLogin, qty: 0 };
+      byUser[ev.byLogin].qty += ev.qty;
+    } else if(ev.type === 'out'){
+      totalOut += ev.qty;
+    }
+  });
+  const byUserList = Object.values(byUser).sort((a,b)=> b.qty - a.qty);
+  return { totalModels, totalIn, totalOut, byUserList };
+}
+
+let DB = loadDB();
+let session = localStorage.getItem(SESSION_KEY) || null;
+let currentTab = 'home';
+let openLines = {};
+let openRows = {};
+let toastTimer = null;
+let fbStatus = 'idle';        // idle | syncing | ok | off | error
+let fbLastSync = null;
+let fbSaveTimer = null;
+let fbApplyingRemote = false; // true пока применяем данные, пришедшие из Firebase (чтобы не зациклить сохранение)
+
+function currentUser(){ return DB.users.find(u => u.login === session); }
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('show'), 1800);
+}
+
+/* ---------- Firebase read/write ---------- */
+async function fbPull(){
+  fbStatus = 'syncing'; updateSyncBar();
+  try{
+    const snap = await fbDb.ref(FB_DATA_PATH).get();
+    if(snap.exists()){
+      const remote = snap.val();
+      if(remote && remote.users && remote.lines){
+        DB = remote;
+        if(!Array.isArray(DB.history)) DB.history = [];
+        saveDBLocal(DB);
+      }
+    }
+    fbStatus = 'ok'; fbLastSync = new Date();
+    return true;
+  }catch(e){
+    fbStatus = 'error';
+    return false;
+  }finally{
+    updateSyncBar();
+  }
+}
+
+function scheduleFbSave(){
+  clearTimeout(fbSaveTimer);
+  fbSaveTimer = setTimeout(fbPush, 500);
+}
+
+async function fbPush(){
+  fbStatus = 'syncing'; updateSyncBar();
+  try{
+    fbApplyingRemote = true; // это наша собственная запись — не нужно перерисовывать по эху listener'а
+    await fbDb.ref(FB_DATA_PATH).set(DB);
+    fbStatus = 'ok'; fbLastSync = new Date();
+  }catch(e){
+    fbStatus = 'error';
+  }finally{
+    setTimeout(()=>{ fbApplyingRemote = false; }, 300);
+    updateSyncBar();
+  }
+}
+
+// Живая синхронизация: как только кто-то другой меняет данные в Firebase,
+// это устройство сразу получает обновление и перерисовывает экран.
+function startFbListener(){
+  fbDb.ref(FB_DATA_PATH).on('value', (snap)=>{
+    if(fbApplyingRemote) return; // пропускаем эхо собственной записи
+    if(!snap.exists()) return;
+    const remote = snap.val();
+    if(!remote || !remote.users || !remote.lines) return;
+    if(JSON.stringify(remote) === JSON.stringify(DB)) return; // ничего не изменилось
+    DB = remote;
+    if(!Array.isArray(DB.history)) DB.history = [];
+    saveDBLocal(DB);
+    fbStatus = 'ok'; fbLastSync = new Date();
+    render();
+  }, ()=>{ fbStatus = 'error'; updateSyncBar(); });
+}
+
+function saveDB(db){
+  saveDBLocal(db);
+  scheduleFbSave();
+}
+
+function updateSyncBar(){
+  const el = document.getElementById('syncBar');
+  if(!el) return;
+  el.outerHTML = renderSyncBar();
+  bindSyncBarEvents();
+}
+
+function renderSyncBar(){
+  let dotClass = 'off', label = 'Подключение к базе...';
+  if(fbStatus==='syncing'){ dotClass='spin'; label='Синхронизация...'; }
+  else if(fbStatus==='ok'){ dotClass=''; label = fbLastSync ? `Синхронизировано · ${fbLastSync.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}` : 'Синхронизировано'; }
+  else if(fbStatus==='error'){ dotClass='off'; label='Ошибка синхронизации'; }
+  return `
+    <div class="sync-bar" id="syncBar">
+      <div style="display:flex;align-items:center;gap:8px;"><span class="dot ${dotClass}"></span>${label}</div>
+      <button class="refresh" id="btnFbRefresh">Обновить</button>
+    </div>
+  `;
+}
+function bindSyncBarEvents(){
+  const b = document.getElementById('btnFbRefresh');
+  if(b) b.onclick = async ()=>{ await fbPull(); render(); toast('Данные обновлены'); };
+}
+
+/* ============================= RENDER ROOT ============================= */
+function render(){
+  const app = document.getElementById('app');
+  if(!session){
+    app.innerHTML = renderAuth();
+    bindAuthEvents();
+  } else {
+    app.innerHTML = renderShell();
+    bindShellEvents();
+  }
+}
+
+/* ============================= AUTH SCREEN ============================= */
+let authTab = 'login';
+let authError = '';
+
+function renderAuth(){
+  return `
+  <div class="auth-wrap">
+    <div class="logo">
+      <div class="box">${NAV_ICONS.box}</div>
+      <h1>Склад</h1>
+      <p>Учёт товаров по линиям и рядам</p>
+    </div>
+
+    <div class="tabs">
+      <button id="tabLogin" class="${authTab==='login'?'active':''}">Вход</button>
+      <button id="tabReg" class="${authTab==='register'?'active':''}">Регистрация</button>
+    </div>
+
+    ${authTab==='login' ? `
+      <div class="field"><label>Логин</label><input id="loginLogin" type="text" autocomplete="username"></div>
+      <div class="field"><label>Пароль</label><input id="loginPass" type="password" autocomplete="current-password"></div>
+      <button class="btn" id="btnDoLogin">Войти</button>
+    ` : `
+      <div class="field"><label>ФИО</label><input id="regFio" type="text" placeholder="Иванов Иван Иванович"></div>
+      <div class="field"><label>Придумайте логин</label><input id="regLogin" type="text"></div>
+      <div class="field"><label>Придумайте пароль</label><input id="regPass" type="password"></div>
+      <button class="btn" id="btnDoReg">Зарегистрироваться</button>
+    `}
+    <div class="err" id="authErr">${authError}</div>
+    <div class="hint">После регистрации доступ к товарам откроет администратор</div>
+  </div>`;
+}
+
+function bindAuthEvents(){
+  document.getElementById('tabLogin').onclick = ()=>{ authTab='login'; authError=''; render(); };
+  document.getElementById('tabReg').onclick = ()=>{ authTab='register'; authError=''; render(); };
+  if(authTab==='login'){ document.getElementById('btnDoLogin').onclick = doLogin; }
+  else { document.getElementById('btnDoReg').onclick = doRegister; }
+}
+
+async function doLogin(){
+  const login = document.getElementById('loginLogin').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  await fbPull(); // подтянуть свежие данные перед проверкой
+  const user = DB.users.find(u => u.login === login && u.password === pass);
+  if(!user){
+    authError = 'Неверный логин или пароль';
+    render();
+    return;
+  }
+  session = user.login;
+  localStorage.setItem(SESSION_KEY, session);
+  authError = '';
+  showWelcome(user.fio, false);
+}
+
+async function doRegister(){
+  const fio = document.getElementById('regFio').value.trim();
+  const login = document.getElementById('regLogin').value.trim();
+  const pass = document.getElementById('regPass').value;
+  if(!fio || !login || !pass){ authError = 'Заполните все поля'; render(); return; }
+  await fbPull();
+  if(DB.users.find(u => u.login === login)){ authError = 'Такой логин уже занят'; render(); return; }
+  const user = { login, password: pass, fio, role:'user', access:'none', telegram:'' };
+  DB.users.push(user);
+  saveDB(DB);
+  session = login;
+  localStorage.setItem(SESSION_KEY, session);
+  authError = '';
+  showWelcome(fio, true);
+}
+
+function showWelcome(fio, isNew){
+  const overlay = document.createElement('div');
+  overlay.className = 'welcome-overlay';
+  overlay.innerHTML = `
+    <div class="welcome-ring">${isNew ? '🎉' : '👋'}</div>
+    <h2>${isNew ? 'Добро пожаловать' : 'С возвращением'}</h2>
+    <h1>${escapeHtml(fio)}</h1>
+    <div class="dots"><span></span><span></span><span></span></div>
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(()=>{
+    overlay.classList.add('hide');
+    setTimeout(()=>{
+      overlay.remove();
+      currentTab = 'home';
+      render();
+    }, 480);
+  }, 5000);
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.innerText = s == null ? '' : s;
+  return d.innerHTML;
+}
+
+/* ============================= APP SHELL ============================= */
+function renderShell(){
+  const u = currentUser();
+  if(!u){ session=null; localStorage.removeItem(SESSION_KEY); return renderAuth(); }
+
+  let body = '';
+  if(currentTab === 'home') body = renderHome(u);
+  else if(currentTab === 'search') body = renderSearch(u);
+  else if(currentTab === 'profile') body = renderProfile(u);
+
+  return `
+    <div class="topbar">
+      <div class="who">
+        <b>${escapeHtml(u.fio)}</b>
+        <span>@${escapeHtml(u.login)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="badge">${u.role==='admin' ? 'АДМИН' : (u.access==='granted' ? 'ДОСТУП' : 'ОЖИДАНИЕ')}</span>
+        <button class="logout" id="btnLogout">Выйти</button>
+      </div>
+    </div>
+    <div class="content" id="content">
+      ${currentTab==='home' ? renderSyncBar() : ''}
+      ${body}
+    </div>
+    <div class="toast" id="toast"></div>
+    <div class="bottom-nav">
+      <button data-tab="home" class="${currentTab==='home'?'active':''}"><span class="ic">${NAV_ICONS.home}</span>Главная</button>
+      <button data-tab="search" class="${currentTab==='search'?'active':''}"><span class="ic">${NAV_ICONS.search}</span>Поиск</button>
+      <button data-tab="profile" class="${currentTab==='profile'?'active':''}"><span class="ic">${NAV_ICONS.profile}</span>Профиль</button>
+    </div>
+  `;
+}
+
+function bindShellEvents(){
+  document.getElementById('btnLogout').onclick = ()=>{
+    session = null;
+    localStorage.removeItem(SESSION_KEY);
+    render();
+  };
+  document.querySelectorAll('.bottom-nav button').forEach(btn=>{
+    btn.onclick = ()=>{ currentTab = btn.dataset.tab; render(); };
+  });
+  if(currentTab==='home') bindSyncBarEvents();
+  bindTabEvents();
+}
+
+function bindTabEvents(){
+  if(currentTab==='home') bindHomeEvents();
+  else if(currentTab==='search') bindSearchEvents();
+  else if(currentTab==='profile') bindProfileEvents();
+}
+
+/* ============================= HOME (СКЛАД) ============================= */
+function hasAccess(u){ return u.role==='admin' || u.access==='granted'; }
+
+function renderHome(u){
+  if(!hasAccess(u)){
+    const admin = DB.users.find(x=>x.role==='admin');
+    const tg = admin && admin.telegram ? admin.telegram.replace('@','') : '';
+    return `
+      <div class="pending-card">
+        <div class="ico">🔒</div>
+        <h3>Требуется разрешение администратора</h3>
+        <p>Ваш аккаунт создан, но доступ к складу пока закрыт.<br>Свяжитесь с администратором, чтобы получить доступ.</p>
+        ${tg ? `<a class="tg-btn" href="https://t.me/${tg}" target="_blank">✈️ Написать в Telegram</a>` : `<p style="font-size:12px">Администратор пока не указал Telegram</p>`}
+      </div>
+    `;
+  }
+
+  let html = '';
+  DB.lines.forEach(line=>{
+    const isOpen = !!openLines[line.id];
+    html += `
+      <div class="line" data-line="${line.id}">
+        <div class="line-head" data-toggle-line="${line.id}">
+          <div class="ttl">📏 <span class="txt">${escapeHtml(line.name)}</span></div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            ${u.role==='admin' ? `<button class="del-x" data-del-line="${line.id}">✕</button>` : ''}
+            <span class="chev ${isOpen?'open':''}">›</span>
+          </div>
+        </div>
+        <div class="line-body ${isOpen?'open':''}">
+          ${line.rows.map(row=>renderRow(u, line, row)).join('')}
+          ${u.role==='admin' ? `
+            <div class="add-inline">
+              <input type="text" placeholder="Новый ряд..." data-new-row="${line.id}">
+              <button data-add-row="${line.id}">+</button>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  });
+
+  if(u.role==='admin'){
+    html += `<button class="add-line-btn" id="btnAddLine">+ Добавить линию</button>`;
+  }
+
+  return html || `<div class="empty-state"><div class="ico">📭</div>Нет данных.${u.role==='admin' ? ' Добавьте первую линию.' : ''}</div>`;
+}
+
+function renderRow(u, line, row){
+  const key = line.id+'_'+row.id;
+  const isOpen = !!openRows[key];
+  return `
+    <div class="row" data-row="${row.id}">
+      <div class="row-head" data-toggle-row="${key}">
+        <div class="ttl">📂 <span class="txt">${escapeHtml(row.name)}</span> <span style="color:var(--muted);font-weight:400;flex:none;">(${row.items.length})</span></div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          ${u.role==='admin' ? `<button class="del-x" data-del-row="${line.id}|${row.id}">✕</button>` : ''}
+          <span class="chev ${isOpen?'open':''}">›</span>
+        </div>
+      </div>
+      <div class="row-body ${isOpen?'open':''}">
+        ${row.items.map(it=>renderItem(u, line, row, it)).join('')}
+        ${u.role==='admin' ? `
+          <div class="add-inline">
+            <input type="text" placeholder="Артикул..." data-new-sku="${line.id}|${row.id}">
+            <input type="number" min="0" value="0" class="qty" data-new-qty="${line.id}|${row.id}">
+            <button data-add-item="${line.id}|${row.id}">+</button>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderItem(u, line, row, it){
+  return `
+    <div class="item" data-item="${it.id}">
+      <div class="info">
+        <div class="sku">${escapeHtml(it.sku)}</div>
+        <div class="loc">${escapeHtml(line.name)} / ${escapeHtml(row.name)}</div>
+      </div>
+      <div class="qty-ctrl">
+        <button data-qty-dec="${line.id}|${row.id}|${it.id}">−</button>
+        <span class="val">${it.qty}</span>
+        <button data-qty-inc="${line.id}|${row.id}|${it.id}">+</button>
+        ${u.role==='admin' ? `<button class="del-x" data-del-item="${line.id}|${row.id}|${it.id}">✕</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function bindHomeEvents(){
+  const u = currentUser();
+  if(!hasAccess(u)) return;
+
+  document.querySelectorAll('[data-toggle-line]').forEach(el=>{
+    el.onclick = ()=>{ const id = el.dataset.toggleLine; openLines[id] = !openLines[id]; render(); };
+  });
+  document.querySelectorAll('[data-toggle-row]').forEach(el=>{
+    el.onclick = ()=>{ const id = el.dataset.toggleRow; openRows[id] = !openRows[id]; render(); };
+  });
+  document.querySelectorAll('[data-qty-inc]').forEach(el=>{ el.onclick = ()=> changeQty(el.dataset.qtyInc, 1); });
+  document.querySelectorAll('[data-qty-dec]').forEach(el=>{ el.onclick = ()=> changeQty(el.dataset.qtyDec, -1); });
+
+  if(u.role==='admin'){
+    const btnAddLine = document.getElementById('btnAddLine');
+    if(btnAddLine) btnAddLine.onclick = ()=>{
+      const name = prompt('Название линии:');
+      if(name && name.trim()){
+        DB.lines.push({ id:uid(), name:name.trim(), rows:[] });
+        saveDB(DB); render();
+      }
+    };
+    document.querySelectorAll('[data-del-line]').forEach(el=>{
+      el.onclick = (e)=>{ e.stopPropagation();
+        if(confirm('Удалить линию и всё её содержимое?')){
+          DB.lines = DB.lines.filter(l=>l.id!==el.dataset.delLine);
+          saveDB(DB); render();
+        }
+      };
+    });
+    document.querySelectorAll('[data-add-row]').forEach(el=>{
+      el.onclick = ()=>{
+        const lineId = el.dataset.addRow;
+        const input = document.querySelector(`[data-new-row="${lineId}"]`);
+        const name = input.value.trim();
+        if(!name) return;
+        const line = DB.lines.find(l=>l.id===lineId);
+        line.rows.push({ id:uid(), name, items:[] });
+        saveDB(DB);
+        openLines[lineId] = true;
+        render();
+      };
+    });
+    document.querySelectorAll('[data-del-row]').forEach(el=>{
+      el.onclick = (e)=>{ e.stopPropagation();
+        const [lineId, rowId] = el.dataset.delRow.split('|');
+        if(confirm('Удалить ряд и его артикулы?')){
+          const line = DB.lines.find(l=>l.id===lineId);
+          line.rows = line.rows.filter(r=>r.id!==rowId);
+          saveDB(DB); render();
+        }
+      };
+    });
+    document.querySelectorAll('[data-add-item]').forEach(el=>{
+      el.onclick = ()=>{
+        const [lineId, rowId] = el.dataset.addItem.split('|');
+        const skuInput = document.querySelector(`[data-new-sku="${lineId}|${rowId}"]`);
+        const qtyInput = document.querySelector(`[data-new-qty="${lineId}|${rowId}"]`);
+        const sku = skuInput.value.trim();
+        const qty = parseInt(qtyInput.value) || 0;
+        if(!sku) return;
+        const line = DB.lines.find(l=>l.id===lineId);
+        const row = line.rows.find(r=>r.id===rowId);
+        row.items.push({ id:uid(), sku, qty });
+        if(qty > 0){
+          logEvent('in', { sku, lineName: line.name, rowName: row.name, qty });
+        }
+        saveDB(DB);
+        openLines[lineId] = true;
+        openRows[lineId+'_'+rowId] = true;
+        render();
+      };
+    });
+    document.querySelectorAll('[data-del-item]').forEach(el=>{
+      el.onclick = ()=>{
+        const [lineId, rowId, itemId] = el.dataset.delItem.split('|');
+        const line = DB.lines.find(l=>l.id===lineId);
+        const row = line.rows.find(r=>r.id===rowId);
+        row.items = row.items.filter(i=>i.id!==itemId);
+        saveDB(DB); render();
+      };
+    });
+  }
+}
+
+function changeQty(key, delta){
+  const [lineId, rowId, itemId] = key.split('|');
+  const line = DB.lines.find(l=>l.id===lineId);
+  const row = line.rows.find(r=>r.id===rowId);
+  const item = row.items.find(i=>i.id===itemId);
+  const before = item.qty;
+  item.qty = Math.max(0, item.qty + delta);
+  const actualDelta = item.qty - before; // фактическое изменение (не даём уйти в минус)
+  if(actualDelta > 0){
+    logEvent('in', { sku: item.sku, lineName: line.name, rowName: row.name, qty: actualDelta });
+  } else if(actualDelta < 0){
+    logEvent('out', { sku: item.sku, lineName: line.name, rowName: row.name, qty: -actualDelta });
+  }
+  saveDB(DB);
+  render();
+}
+
+/* ============================= SEARCH ============================= */
+let searchQuery = '';
+
+function renderSearch(u){
+  if(!hasAccess(u)){
+    return `<div class="empty-state"><div class="ico">🔒</div>Поиск станет доступен после подтверждения администратора</div>`;
+  }
+  const results = [];
+  if(searchQuery.trim().length > 0){
+    const q = searchQuery.trim().toLowerCase();
+    DB.lines.forEach(line=>{
+      line.rows.forEach(row=>{
+        row.items.forEach(it=>{
+          if(it.sku.toLowerCase().includes(q) || line.name.toLowerCase().includes(q) || row.name.toLowerCase().includes(q)){
+            results.push({line, row, item: it});
+          }
+        });
+      });
+    });
+  }
+
+  return `
+    <div class="search-box">
+      <span>🔍</span>
+      <input id="searchInput" type="text" placeholder="Поиск по артикулу, линии, ряду..." value="${escapeHtml(searchQuery)}">
+    </div>
+    ${searchQuery.trim()==='' ? `<div class="empty-state"><div class="ico">🔎</div>Начните вводить артикул или название</div>` :
+      results.length===0 ? `<div class="empty-state"><div class="ico">🚫</div>Ничего не найдено</div>` :
+      results.map(r=>`
+        <div class="search-result">
+          <div class="info">
+            <div class="sku">${escapeHtml(r.item.sku)}</div>
+            <div class="loc">${escapeHtml(r.line.name)} / ${escapeHtml(r.row.name)}</div>
+          </div>
+          <div class="qty-ctrl">
+            <button data-qty-dec="${r.line.id}|${r.row.id}|${r.item.id}">−</button>
+            <span class="val">${r.item.qty}</span>
+            <button data-qty-inc="${r.line.id}|${r.row.id}|${r.item.id}">+</button>
+          </div>
+        </div>
+      `).join('')
+    }
+  `;
+}
+
+function bindSearchEvents(){
+  const input = document.getElementById('searchInput');
+  if(input){
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+    input.oninput = (e)=>{
+      searchQuery = e.target.value; render();
+      const i2 = document.getElementById('searchInput');
+      i2.focus(); i2.setSelectionRange(searchQuery.length, searchQuery.length);
+    };
+  }
+  document.querySelectorAll('[data-qty-inc]').forEach(el=>{ el.onclick = ()=> changeQty(el.dataset.qtyInc, 1); });
+  document.querySelectorAll('[data-qty-dec]').forEach(el=>{ el.onclick = ()=> changeQty(el.dataset.qtyDec, -1); });
+}
+
+/* ============================= PROFILE ============================= */
+function renderProfile(u){
+  const initials = u.fio.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+
+  let html = `
+    <div class="profile-card">
+      <div class="profile-avatar">${initials}</div>
+      <h3>${escapeHtml(u.fio)}</h3>
+      <div class="sub">Логин: @${escapeHtml(u.login)}</div>
+      <div class="sub">Роль: ${u.role==='admin'?'Администратор':'Пользователь'} · ${hasAccess(u)?'доступ открыт':'ожидает доступа'}</div>
+    </div>
+
+    <div class="section-title">Изменить данные</div>
+    <div class="profile-card">
+      <div class="field"><label>Новый логин</label><input id="editLogin" type="text" value="${escapeHtml(u.login)}"></div>
+      <div class="field"><label>Новый пароль</label><input id="editPass" type="password" placeholder="Оставьте пустым, чтобы не менять"></div>
+      <button class="btn" id="btnSaveProfile">Сохранить</button>
+      <div class="err" id="profileErr"></div>
+    </div>
+  `;
+
+  if(hasAccess(u)){
+    const stats = computeStats();
+    html += `
+      <div class="section-title">Статистика склада</div>
+      <div class="stat-grid">
+        <div class="stat-tile">
+          <div class="stat-num">${stats.totalModels}</div>
+          <div class="stat-label">Моделей на складе</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-num" style="color:var(--accent2)">${stats.totalIn}</div>
+          <div class="stat-label">Новых поступило</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-num" style="color:var(--danger)">${stats.totalOut}</div>
+          <div class="stat-label">Продано</div>
+        </div>
+      </div>
+    `;
+  }
+
+  if(u.role==='admin'){
+    html += `
+      <div class="section-title">Telegram для связи с пользователями</div>
+      <div class="profile-card">
+        <div class="field"><label>Ваш Telegram (username без @)</label><input id="editTg" type="text" value="${escapeHtml(u.telegram||'')}" placeholder="username"></div>
+        <button class="btn secondary" id="btnSaveTg">Сохранить Telegram</button>
+      </div>
+
+      <div class="section-title">Синхронизация с Firebase</div>
+      <div class="profile-card">
+        <div class="err" style="color:var(--muted);margin-bottom:6px;">
+          Проект: <b style="color:var(--text)">${firebaseConfig.projectId}</b>
+        </div>
+        <p style="font-size:12px;color:var(--muted);line-height:1.6;margin:0;">
+          Данные склада хранятся в общей базе Firebase Realtime Database и
+          автоматически обновляются на всех устройствах в реальном времени —
+          отдельный токен для записи не нужен. Доступ к записи/чтению базы
+          регулируется правилами безопасности (Rules) в консоли Firebase —
+          рекомендуем ограничить их, чтобы посторонние не могли менять данные.
+        </p>
+      </div>
+
+      <div class="section-title">Пользователи (${DB.users.filter(x=>x.role!=='admin').length})</div>
+      ${DB.users.filter(x=>x.role!=='admin').map(x=>`
+        <div class="user-row">
+          <div class="info">
+            <b>${escapeHtml(x.fio)}</b>
+            <span>@${escapeHtml(x.login)}</span>
+          </div>
+          <select class="access-sel" data-access-user="${x.login}">
+            <option value="none" ${x.access==='none'?'selected':''}>Нет доступа</option>
+            <option value="granted" ${x.access==='granted'?'selected':''}>Доступ открыт</option>
+          </select>
+        </div>
+      `).join('') || `<div class="empty-state" style="padding:30px 0"><div class="ico">👥</div>Пока никто не зарегистрировался</div>`}
+
+      <div class="section-title">Кто добавил новые товары</div>
+      ${(function(){
+        const stats = computeStats();
+        if(stats.byUserList.length === 0){
+          return `<div class="empty-state" style="padding:24px 0"><div class="ico">📦</div>Пока никто не пополнял склад</div>`;
+        }
+        return stats.byUserList.map(x=>`
+          <div class="user-row">
+            <div class="info">
+              <b>${escapeHtml(x.fio || x.login)}</b>
+              <span>@${escapeHtml(x.login)}</span>
+            </div>
+            <span class="badge" style="color:var(--accent2)">+${x.qty}</span>
+          </div>
+        `).join('');
+      })()}
+    `;
+  }
+
+  return html;
+}
+
+function bindProfileEvents(){
+  const u = currentUser();
+
+  document.getElementById('btnSaveProfile').onclick = ()=>{
+    const newLogin = document.getElementById('editLogin').value.trim();
+    const newPass = document.getElementById('editPass').value;
+    const errEl = document.getElementById('profileErr');
+    if(!newLogin){ errEl.textContent = 'Логин не может быть пустым'; return; }
+    if(newLogin !== u.login && DB.users.find(x=>x.login===newLogin)){
+      errEl.textContent = 'Такой логин уже занят';
+      return;
+    }
+    u.login = newLogin;
+    if(newPass) u.password = newPass;
+    saveDB(DB);
+    session = newLogin;
+    localStorage.setItem(SESSION_KEY, session);
+    errEl.textContent = '';
+    toast('Данные сохранены');
+    render();
+  };
+
+  if(u.role==='admin'){
+    const btnTg = document.getElementById('btnSaveTg');
+    if(btnTg) btnTg.onclick = ()=>{
+      const tg = document.getElementById('editTg').value.trim();
+      u.telegram = tg;
+      saveDB(DB);
+      toast('Telegram сохранён');
+    };
+
+    document.querySelectorAll('[data-access-user]').forEach(sel=>{
+      sel.onchange = ()=>{
+        const login = sel.dataset.accessUser;
+        const target = DB.users.find(x=>x.login===login);
+        target.access = sel.value;
+        saveDB(DB);
+        toast(`Доступ для ${target.fio}: ${sel.value==='granted'?'открыт':'закрыт'}`);
+      };
+    });
+  }
+}
+
+/* ============================= INIT ============================= */
+(async function init(){
+  render();
+  await fbPull();
+  render();
+  startFbListener(); // дальше данные будут обновляться в реальном времени сами
+})();
+</script>
+</body>
+</html>
